@@ -71,7 +71,7 @@ const currentYear=Number(tokyoParts.find(p=>p.type==='year').value);
 const currentMonth=Number(tokyoParts.find(p=>p.type==='month').value);
 for(let y=2026;y<=2099;y++){let o=document.createElement('option');o.value=y;o.textContent=y+'年';if(y===currentYear)o.selected=true;year.append(o)}
 for(let m=1;m<=12;m++){let o=document.createElement('option');o.value=m;o.textContent=m+'月';if(m===currentMonth)o.selected=true;month.append(o)}
-function render(){
+function render(animate=false){
  const y=+year.value,m=+month.value,days=new Date(y,m,0).getDate(),hs=holidays(y);
  const t=document.getElementById('calendar');t.replaceChildren();
  const thead=document.createElement('thead'),hr=document.createElement('tr'),teamHead=document.createElement('th');teamHead.className='team';teamHead.textContent='組';hr.append(teamHead);
