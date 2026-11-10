@@ -16,6 +16,8 @@ main{max-width:1100px;margin:auto;padding:16px}
 .calendar-toolbar{display:flex;gap:8px;align-items:center;padding:10px;background:#e9edf2;border-bottom:1px solid var(--line)}
 .calendar-toolbar select{font-size:17px;font-weight:700;padding:7px 9px;border:1px solid #aab3bd;border-radius:8px;background:white;color:var(--ink)}
 .wrap{overflow-x:auto;background:white;border:1px solid #9aa3ad;border-radius:10px}
+.page-stack{position:relative;isolation:isolate}
+.page-underlay{position:absolute;z-index:-1;inset:0;background:#fff;border:1px solid #aeb7c1;border-radius:9px;transform:translateY(6px) scale(.994);box-shadow:0 4px 9px rgba(32,40,50,.13)}
 table{border-collapse:collapse;min-width:max-content;width:100%;table-layout:fixed}
 th,td{border:1px solid var(--line);text-align:center;padding:7px 5px;min-width:43px}
 thead th{background:var(--head);font-weight:700}
@@ -26,6 +28,9 @@ tbody th.team{background:#f1f3f6}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0;font-size:14px}
 .note{font-size:12px;color:#626d79;line-height:1.6;margin-top:14px}
 .warning{background:#fff7e6;border:1px solid #f0d28b;padding:10px 12px;border-radius:9px;font-size:13px;line-height:1.55;margin-top:12px}
+@keyframes pageTurn{0%{transform:perspective(900px) rotateX(0) translateY(0);filter:brightness(1);box-shadow:0 0 0 rgba(32,40,50,0)}45%{transform:perspective(900px) rotateX(-7deg) translateY(-5px);filter:brightness(.97);box-shadow:0 9px 13px rgba(32,40,50,.16)}100%{transform:perspective(900px) rotateX(0) translateY(0);filter:brightness(1);box-shadow:0 0 0 rgba(32,40,50,0)}}
+#calendar.page-turn{transform-origin:top center;backface-visibility:hidden;animation:pageTurn .42s cubic-bezier(.22,.72,.25,1)}
+@media(prefers-reduced-motion:reduce){#calendar.page-turn{animation:none}}
 @media(max-width:600px){main{padding:10px}th,td{min-width:39px;padding:7px 3px}.shift{font-size:16px}}
 </style>
 </head>
@@ -33,7 +38,7 @@ tbody th.team{background:#f1f3f6}
 <main>
 <div class="wrap">
 <div class="calendar-toolbar"><select id="year" aria-label="年"></select><select id="month" aria-label="月"></select></div>
-<table id="calendar" aria-label="組別勤務表"></table></div>
+<div class="page-stack"><div class="page-underlay" aria-hidden="true"></div><table id="calendar" aria-label="組別勤務表"></table></div></div>
 </main>
 <script>
 // 基準日：2026年11月1日。元表の上から4行を1組〜4組として登録。
@@ -76,7 +81,8 @@ function render(){
  patterns.forEach((pat,i)=>{let tr=document.createElement('tr'),th=document.createElement('th');th.className='team';th.textContent=`${i+1}組`;tr.append(th);
  for(let d=1;d<=days;d++){let date=new Date(y,m-1,d),td=document.createElement('td'),key=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;let diff=Math.round((Date.UTC(y,m-1,d)-Date.UTC(2026,10,1))/86400000);let shift=pat[((diff%16)+16)%16];td.textContent=shift;td.className='shift shift-'+shift;tr.append(td)}
  tbody.append(tr)});t.append(tbody);
+ if(animate){t.classList.remove('page-turn');void t.offsetWidth;t.classList.add('page-turn');}
 }
-year.addEventListener('change',render);month.addEventListener('change',render);render();
+year.addEventListener('change',()=>render(true));month.addEventListener('change',()=>render(true));render();
 </script>
 </body></html>
