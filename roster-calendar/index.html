@@ -60,8 +60,12 @@ function holidays(y){
  return h;
 }
 const year=document.getElementById('year'),month=document.getElementById('month');
-for(let y=2026;y<=2099;y++){let o=document.createElement('option');o.value=y;o.textContent=y+'年';if(y===2026)o.selected=true;year.append(o)}
-for(let m=1;m<=12;m++){let o=document.createElement('option');o.value=m;o.textContent=m+'月';if(m===11)o.selected=true;month.append(o)}
+// 初期表示は常に日本時間の当月。端末のタイムゾーン設定には依存しない。
+const tokyoParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'numeric'}).formatToParts(new Date());
+const currentYear=Number(tokyoParts.find(p=>p.type==='year').value);
+const currentMonth=Number(tokyoParts.find(p=>p.type==='month').value);
+for(let y=2026;y<=2099;y++){let o=document.createElement('option');o.value=y;o.textContent=y+'年';if(y===currentYear)o.selected=true;year.append(o)}
+for(let m=1;m<=12;m++){let o=document.createElement('option');o.value=m;o.textContent=m+'月';if(m===currentMonth)o.selected=true;month.append(o)}
 function render(){
  const y=+year.value,m=+month.value,days=new Date(y,m,0).getDate(),hs=holidays(y);
  const t=document.getElementById('calendar');t.replaceChildren();
