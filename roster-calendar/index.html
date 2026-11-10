@@ -131,7 +131,7 @@ function finishSwipe(e){
   turnPending=true;
   pageStack.classList.remove('is-dragging');
   pageStack.classList.add('is-settling');
-  const direction=dx<0?-1:1;
+  const direction=dx<0?1:-1;
   document.getElementById('calendar').style.transform=`translateX(${direction*width}px)`;
   pageStack.style.setProperty('--underlay-x','0px');
   const done=()=>{document.getElementById('calendar').removeEventListener('transitionend',done);changeMonthBy(direction);};
