@@ -15,14 +15,14 @@
 main{max-width:1100px;margin:auto;padding:16px}
 .calendar-toolbar{display:flex;gap:8px;align-items:center;padding:10px;background:#e9edf2;border-bottom:1px solid var(--line)}
 .calendar-toolbar select{font-size:17px;font-weight:700;padding:7px 9px;border:1px solid #aab3bd;border-radius:8px;background:white;color:var(--ink)}
-.wrap{overflow-x:auto;background:white;border:1px solid #9aa3ad;border-radius:10px}
+.wrap{overflow-x:auto;background:white;border:1px solid #9aa3ad;border-radius:10px;touch-action:pan-y}
 .page-stack{position:relative;isolation:isolate}
 .page-underlay{position:absolute;z-index:-1;inset:0;background:#fff;border:1px solid #aeb7c1;border-radius:9px;transform:translateX(var(--underlay-x,0px)) translateY(6px) scale(.994);box-shadow:0 4px 9px rgba(32,40,50,.13);transition:transform .26s cubic-bezier(.22,.72,.25,1)}
 .page-stack{--underlay-x:0px}
 #calendar{will-change:transform;transition:transform .26s cubic-bezier(.22,.72,.25,1)}
 .page-stack.is-dragging #calendar,.page-stack.is-dragging .page-underlay{transition:none}
 .page-stack.is-settling #calendar,.page-stack.is-settling .page-underlay{transition:transform .26s cubic-bezier(.22,.72,.25,1)}
-th.team{touch-action:none;user-select:none;-webkit-user-select:none}
+th.team{user-select:none;-webkit-user-select:none}
 table{border-collapse:collapse;min-width:max-content;width:100%;table-layout:fixed}
 th,td{border:1px solid var(--line);text-align:center;padding:7px 5px;min-width:43px}
 thead th{background:var(--head);font-weight:700}
@@ -109,7 +109,7 @@ function changeMonthBy(delta){
  turnPending=false;
 }
 calendarWrap.addEventListener('pointerdown',e=>{
- if(e.pointerType!=='touch'||!e.target.closest('th.team')||turnPending)return;
+ if(e.pointerType!=='touch'||turnPending)return;
  swipePointer=e.pointerId;swipeStartX=e.clientX;swipeDeltaX=0;
  pageStack.classList.add('is-dragging');
  calendarWrap.setPointerCapture(e.pointerId);
