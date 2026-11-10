@@ -30,12 +30,11 @@ tbody th.team{background:#f1f3f6}
 </head>
 <body>
 <main>
-<h1>動力勤務カレンダー</h1>
+<h1 id="pageTitle">2026年11月 動力勤務カレンダー</h1>
 <div class="controls">
 <label for="year">年</label><select id="year"></select>
 <label for="month">月</label><select id="month"></select>
 </div>
-<div class="title" id="monthTitle"></div>
 <div class="wrap"><table id="calendar" aria-label="組別勤務表"></table></div>
 </main>
 <script>
@@ -67,7 +66,7 @@ for(let y=2026;y<=2099;y++){let o=document.createElement('option');o.value=y;o.t
 for(let m=1;m<=12;m++){let o=document.createElement('option');o.value=m;o.textContent=m+'月';if(m===11)o.selected=true;month.append(o)}
 function render(){
  const y=+year.value,m=+month.value,days=new Date(y,m,0).getDate(),hs=holidays(y);
- document.getElementById('monthTitle').textContent=`${y}年${m}月　動力勤務計画表`;
+ document.getElementById('pageTitle').textContent=`${y}年${m}月　動力勤務カレンダー`;
  const t=document.getElementById('calendar');t.replaceChildren();
  const thead=document.createElement('thead'),hr=document.createElement('tr'),teamHead=document.createElement('th');teamHead.className='team';teamHead.textContent='組';hr.append(teamHead);
  for(let d=1;d<=days;d++){let date=new Date(y,m-1,d),th=document.createElement('th'),key=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;th.innerHTML=`${d}<br>${jp(date)}`;if(hs.has(key)||date.getDay()===0)th.classList.add('sun');else if(date.getDay()===6)th.classList.add('sat');hr.append(th)}
