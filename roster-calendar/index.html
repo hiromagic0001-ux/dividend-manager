@@ -10,9 +10,11 @@
 <meta name="theme-color" content="#f3f5f8">
 <title>動力勤務カレンダー</title>
 <style>
+@media(orientation:portrait){body:before{content:"横向きにしてご利用ください";position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#101b2b;color:white;font-size:clamp(20px,5vw,32px);font-weight:800;letter-spacing:.08em;text-align:center;padding:24px}body:after{content:"iPhoneを横向きにしてください";position:fixed;z-index:10000;top:calc(50% + 42px);left:0;right:0;text-align:center;color:#cbd5e1;font-size:14px;pointer-events:none}}
+@media(orientation:landscape){main{max-width:none;width:100%;padding:8px 12px}.wrap{max-height:calc(100dvh - 24px)} }
 :root{--line:#9aa3ad;--head:#e9edf2;--sat:#1769c2;--sun:#d12f2f;--ink:#202832}
 *{box-sizing:border-box}body{margin:0;background:#f3f5f8;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
-main{max-width:1100px;margin:auto;padding:16px}
+main{max-width:1100px;margin:auto;padding:16px;touch-action:pan-y pinch-zoom}
 .calendar-toolbar{display:flex;gap:8px;align-items:center;padding:10px;background:#e9edf2;border-bottom:1px solid var(--line)}
 .calendar-toolbar select{font-size:17px;font-weight:700;padding:7px 9px;border:1px solid #aab3bd;border-radius:8px;background:white;color:var(--ink)}
 .wrap{overflow-x:auto;background:white;border:1px solid #9aa3ad;border-radius:10px;touch-action:pan-y}
@@ -90,10 +92,9 @@ function render(animate=false){
 }
 year.addEventListener('change',()=>render(true));month.addEventListener('change',()=>render(true));render();
 
-// 固定された「組」列から左右にスワイプすると月を切り替える。
-// 日付セル上の横スクロールは従来どおり残す。
+// 画面内のどこからでも左右スワイプで月を切り替える。
 const pageStack=document.querySelector('.page-stack');
-const calendarWrap=document.querySelector('.wrap');
+const calendarWrap=document.querySelector('main');
 let swipeStartX=0,swipeDeltaX=0,swipePointer=null,turnPending=false;
 function clearSwipeStyles(){
  pageStack.classList.remove('is-dragging','is-settling');
