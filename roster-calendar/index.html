@@ -17,7 +17,12 @@ main{max-width:1100px;margin:auto;padding:16px}
 .calendar-toolbar select{font-size:17px;font-weight:700;padding:7px 9px;border:1px solid #aab3bd;border-radius:8px;background:white;color:var(--ink)}
 .wrap{overflow-x:auto;background:white;border:1px solid #9aa3ad;border-radius:10px}
 .page-stack{position:relative;isolation:isolate}
-.page-underlay{position:absolute;z-index:-1;inset:0;background:#fff;border:1px solid #aeb7c1;border-radius:9px;transform:translateY(6px) scale(.994);box-shadow:0 4px 9px rgba(32,40,50,.13)}
+.page-underlay{position:absolute;z-index:-1;inset:0;background:#fff;border:1px solid #aeb7c1;border-radius:9px;transform:translateX(var(--underlay-x,0px)) translateY(6px) scale(.994);box-shadow:0 4px 9px rgba(32,40,50,.13);transition:transform .26s cubic-bezier(.22,.72,.25,1)}
+.page-stack{--underlay-x:0px}
+#calendar{will-change:transform;transition:transform .26s cubic-bezier(.22,.72,.25,1)}
+.page-stack.is-dragging #calendar,.page-stack.is-dragging .page-underlay{transition:none}
+.page-stack.is-settling #calendar,.page-stack.is-settling .page-underlay{transition:transform .26s cubic-bezier(.22,.72,.25,1)}
+th.team{touch-action:none;user-select:none;-webkit-user-select:none}
 table{border-collapse:collapse;min-width:max-content;width:100%;table-layout:fixed}
 th,td{border:1px solid var(--line);text-align:center;padding:7px 5px;min-width:43px}
 thead th{background:var(--head);font-weight:700}
@@ -84,5 +89,64 @@ function render(animate=false){
  if(animate){t.classList.remove('page-turn');void t.offsetWidth;t.classList.add('page-turn');}
 }
 year.addEventListener('change',()=>render(true));month.addEventListener('change',()=>render(true));render();
+
+// 固定された「組」列から左右にスワイプすると月を切り替える。
+// 日付セル上の横スクロールは従来どおり残す。
+const pageStack=document.querySelector('.page-stack');
+const calendarWrap=document.querySelector('.wrap');
+let swipeStartX=0,swipeDeltaX=0,swipePointer=null,turnPending=false;
+function clearSwipeStyles(){
+ pageStack.classList.remove('is-dragging','is-settling');
+ pageStack.style.removeProperty('--underlay-x');
+ document.getElementById('calendar').style.removeProperty('transform');
+}
+function changeMonthBy(delta){
+ const next=new Date(+year.value,+month.value-1+delta,1);
+ year.value=String(next.getFullYear());
+ month.value=String(next.getMonth()+1);
+ render(false);
+ clearSwipeStyles();
+ turnPending=false;
+}
+calendarWrap.addEventListener('pointerdown',e=>{
+ if(e.pointerType!=='touch'||!e.target.closest('th.team')||turnPending)return;
+ swipePointer=e.pointerId;swipeStartX=e.clientX;swipeDeltaX=0;
+ pageStack.classList.add('is-dragging');
+ calendarWrap.setPointerCapture(e.pointerId);
+});
+calendarWrap.addEventListener('pointermove',e=>{
+ if(swipePointer!==e.pointerId||turnPending)return;
+ swipeDeltaX=e.clientX-swipeStartX;
+ const width=pageStack.clientWidth||calendarWrap.clientWidth;
+ const limited=Math.max(-width,Math.min(width,swipeDeltaX));
+ document.getElementById('calendar').style.transform=`translateX(${limited}px)`;
+ pageStack.style.setProperty('--underlay-x',`calc(${limited<0?'100%':'-100%'} + ${limited}px)`);
+});
+function finishSwipe(e){
+ if(swipePointer!==e.pointerId)return;
+ const dx=swipeDeltaX;
+ swipePointer=null;
+ const width=pageStack.clientWidth||calendarWrap.clientWidth;
+ if(Math.abs(dx)>Math.max(65,width*.18)){
+  turnPending=true;
+  pageStack.classList.remove('is-dragging');
+  pageStack.classList.add('is-settling');
+  const direction=dx<0?-1:1;
+  document.getElementById('calendar').style.transform=`translateX(${direction*width}px)`;
+  pageStack.style.setProperty('--underlay-x','0px');
+  const done=()=>{document.getElementById('calendar').removeEventListener('transitionend',done);changeMonthBy(direction);};
+  document.getElementById('calendar').addEventListener('transitionend',done);
+  setTimeout(()=>{if(turnPending)changeMonthBy(direction);},350);
+ }else{
+  pageStack.classList.remove('is-dragging');
+  pageStack.classList.add('is-settling');
+  document.getElementById('calendar').style.transform='translateX(0px)';
+  pageStack.style.setProperty('--underlay-x','0px');
+  setTimeout(clearSwipeStyles,280);
+ }
+ swipeDeltaX=0;
+}
+calendarWrap.addEventListener('pointerup',finishSwipe);
+calendarWrap.addEventListener('pointercancel',finishSwipe);
 </script>
 </body></html>
