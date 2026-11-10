@@ -74,7 +74,7 @@ function render(){
  thead.append(hr);t.append(thead);
  const tbody=document.createElement('tbody');
  patterns.forEach((pat,i)=>{let tr=document.createElement('tr'),th=document.createElement('th');th.className='team';th.textContent=`${i+1}組`;tr.append(th);
- for(let d=1;d<=days;d++){let date=new Date(y,m-1,d),td=document.createElement('td'),key=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;let diff=Math.round((Date.UTC(y,m-1,d)-Date.UTC(2026,10,1))/86400000);let shift=pat[((diff%16)+16)%16];td.textContent=shift;td.className='shift'+(shift==='休'?' off':'');if(hs.has(key)||date.getDay()===0)td.classList.add('sun');else if(date.getDay()===6)td.classList.add('sat');tr.append(td)}
+ for(let d=1;d<=days;d++){let date=new Date(y,m-1,d),td=document.createElement('td'),key=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;let diff=Math.round((Date.UTC(y,m-1,d)-Date.UTC(2026,10,1))/86400000);let shift=pat[((diff%16)+16)%16];td.textContent=shift;td.className='shift'+(shift==='休'?' off':'');tr.append(td)}
  tbody.append(tr)});t.append(tbody);
 }
 year.addEventListener('change',render);month.addEventListener('change',render);render();
