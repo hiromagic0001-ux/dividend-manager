@@ -163,38 +163,25 @@ document.getElementById('currentMonth').addEventListener('click',()=>{
 });
 render();
 
-// iPhone Safari用：main全域のTouch Eventsだけで月送りを処理する。
-// Pointer Eventsとの二重処理や、表の横スクロールとの競合を避ける。
-const swipeArea=document.querySelector('main');
-let touchStartX=0,touchStartY=0,touchLastX=0,touchActive=false,touchLocked=false;
-function finishMonthSwipe(){
- if(!touchActive)return;
- const dx=touchLastX-touchStartX;
- touchActive=false;
- if(touchLocked && Math.abs(dx)>55){
-  const delta=dx<0?1:-1;
-  const next=new Date(Number(year.value),Number(month.value)-1+delta,1);
-  year.value=String(next.getFullYear());
-  month.value=String(next.getMonth()+1);
-  render(true,delta);
- }
- touchLocked=false;
-}
-swipeArea.addEventListener('touchstart',e=>{
- if(e.touches.length!==1 || e.target.closest('select,button,input')){touchActive=false;return;}
- touchStartX=touchLastX=e.touches[0].clientX;
- touchStartY=e.touches[0].clientY;
- touchActive=true;touchLocked=false;
-},{passive:true});
-swipeArea.addEventListener('touchmove',e=>{
- if(!touchActive || e.touches.length!==1)return;
- const dx=e.touches[0].clientX-touchStartX;
- const dy=e.touches[0].clientY-touchStartY;
- touchLastX=e.touches[0].clientX;
- if(Math.abs(dx)>12 && Math.abs(dx)>Math.abs(dy)*1.15){touchLocked=true;e.preventDefault();}
-},{passive:false});
-swipeArea.addEventListener('touchend',finishMonthSwipe,{passive:true});
-swipeArea.addEventListener('touchcancel',()=>{touchActive=false;touchLocked=false;},{passive:true});
+// iPhone Safari用：document captureで左右スワイプを確実に検出。
+let swipeX=0,swipeY=0,swipeActive=false;
+document.addEventListener('touchstart',e=>{
+ if(e.touches.length!==1 || e.target.closest('select,button,input')){swipeActive=false;return;}
+ swipeX=e.touches[0].clientX;swipeY=e.touches[0].clientY;swipeActive=true;
+},{capture:true,passive:true});
+document.addEventListener('touchend',e=>{
+ if(!swipeActive || !e.changedTouches.length)return;
+ const dx=e.changedTouches[0].clientX-swipeX;
+ const dy=e.changedTouches[0].clientY-swipeY;
+ swipeActive=false;
+ if(Math.abs(dx)<65 || Math.abs(dx)<Math.abs(dy)*1.2)return;
+ const delta=dx<0?1:-1;
+ const next=new Date(Number(year.value),Number(month.value)-1+delta,1);
+ year.value=String(next.getFullYear());
+ month.value=String(next.getMonth()+1);
+ render(true,delta);
+},{capture:true,passive:true});
+document.addEventListener('touchcancel',()=>{swipeActive=false;},{capture:true,passive:true});
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }
