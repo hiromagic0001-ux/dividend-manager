@@ -140,7 +140,7 @@ function render(animate=false,direction=0){
  appendSection(1,Math.min(15,days),'portrait-only');
  if(days>15){
   const gap=document.createElement('tr');gap.className='portrait-only section-gap';
-  const gapCell=document.createElement('td');gapCell.colSpan=32;gapCell.setAttribute('aria-hidden','true');gap.append(gapCell);tbody.append(gap);
+  const gapCell=document.createElement('td');gapCell.colSpan=17;gapCell.setAttribute('aria-hidden','true');gap.append(gapCell);tbody.append(gap);
   appendSection(16,days,'portrait-only');
  }
  t.append(thead,tbody);
