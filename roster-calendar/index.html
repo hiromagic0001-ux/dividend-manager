@@ -180,8 +180,25 @@ function changeMonthBy(delta){
  clearSwipeStyles();
  turnPending=false;
 }
+// iPhone Safari向けのTouch Eventsフォールバック。横スワイプをブラウザの横スクロールに奪われず月送りに使う。
+document.addEventListener('touchstart',e=>{
+ if(swipePointer!==null||turnPending||!e.touches.length||e.target.closest('select,button,input'))return;
+ swipePointer='touch';swipeStartX=e.touches[0].clientX;swipeDeltaX=0;
+ pageStack.classList.add('is-dragging');
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+ if(swipePointer!=='touch'||turnPending||!e.touches.length)return;
+ e.preventDefault();
+ swipeDeltaX=e.touches[0].clientX-swipeStartX;
+ const width=pageStack.clientWidth||calendarWrap.clientWidth;
+ const limited=Math.max(-width,Math.min(width,swipeDeltaX));
+ document.getElementById('calendar').style.transform=`translateX(${limited}px)`;
+ pageStack.style.setProperty('--underlay-x',`calc(${limited<0?'100%':'-100%'} + ${limited}px)`);
+},{passive:false});
+document.addEventListener('touchend',()=>{if(swipePointer==='touch')finishSwipe({pointerId:'touch'});},{passive:true});
+document.addEventListener('touchcancel',()=>{if(swipePointer==='touch')finishSwipe({pointerId:'touch'});},{passive:true});
 document.addEventListener('pointerdown',e=>{
- if(e.pointerType!=='touch'||turnPending||e.target.closest('select,button,input'))return;
+ if(e.pointerType!=='touch'||swipePointer!==null||turnPending||e.target.closest('select,button,input'))return;
  swipePointer=e.pointerId;swipeStartX=e.clientX;swipeDeltaX=0;
  pageStack.classList.add('is-dragging');
  if(e.target.setPointerCapture)e.target.setPointerCapture(e.pointerId);
