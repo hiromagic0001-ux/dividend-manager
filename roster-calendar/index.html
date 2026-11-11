@@ -44,6 +44,18 @@ tbody th.team{background:#f1f3f6}
 #calendar.page-turn.turn-prev{transform-origin:right center;--turn-angle:11deg;--turn-shift:2px}
 @media(prefers-reduced-motion:reduce){#calendar.page-turn{animation:none}}
 @media(max-width:600px){main{padding:10px}th,td{min-width:39px;padding:7px 3px}.shift{font-size:16px}}
+@media(orientation:portrait) and (max-width:700px){
+ table{min-width:0;width:100%;table-layout:fixed}
+ th,td{min-width:0;padding:5px 1px;font-size:11px}
+ th.team{width:30px;min-width:30px}
+ .shift{font-size:14px}
+ .landscape-only{display:none}
+ .portrait-only{display:table-row}
+}
+@media(orientation:landscape),(min-width:701px){
+ .portrait-only{display:none}
+ .landscape-only{display:table-row}
+}
 </style>
 </head>
 <body>
@@ -86,13 +98,32 @@ for(let m=1;m<=12;m++){let o=document.createElement('option');o.value=m;o.textCo
 function render(animate=false,direction=0){
  const y=+year.value,m=+month.value,days=new Date(y,m,0).getDate(),hs=holidays(y);
  const t=document.getElementById('calendar');t.replaceChildren();
- const thead=document.createElement('thead'),hr=document.createElement('tr'),teamHead=document.createElement('th');teamHead.className='team';teamHead.textContent='組';hr.append(teamHead);
- for(let d=1;d<=days;d++){let date=new Date(y,m-1,d),th=document.createElement('th'),key=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;th.innerHTML=`${d}<br>${jp(date)}`;if(hs.has(key)||date.getDay()===0)th.classList.add('sun');else if(date.getDay()===6)th.classList.add('sat');hr.append(th)}
- thead.append(hr);t.append(thead);
- const tbody=document.createElement('tbody');
- patterns.forEach((pat,i)=>{let tr=document.createElement('tr'),th=document.createElement('th');th.className='team';th.textContent=`${i+1}組`;tr.append(th);
- for(let d=1;d<=days;d++){let date=new Date(y,m-1,d),td=document.createElement('td'),key=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;let diff=Math.round((Date.UTC(y,m-1,d)-Date.UTC(2026,10,1))/86400000);let shift=pat[((diff%16)+16)%16];td.textContent=shift;td.className='shift shift-'+shift;tr.append(td)}
- tbody.append(tr)});t.append(tbody);
+ const thead=document.createElement('thead'),tbody=document.createElement('tbody');
+ function appendSection(start,end,visibility){
+  const hr=document.createElement('tr');hr.className=visibility;
+  const teamHead=document.createElement('th');teamHead.className='team';teamHead.textContent='組';hr.append(teamHead);
+  for(let d=start;d<=end;d++){
+   let date=new Date(y,m-1,d),th=document.createElement('th'),key=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+   th.innerHTML=d+'<br>'+jp(date);
+   if(hs.has(key)||date.getDay()===0)th.classList.add('sun');else if(date.getDay()===6)th.classList.add('sat');
+   hr.append(th);
+  }
+  (visibility==='landscape-only'?thead:tbody).append(hr);
+  patterns.forEach((pat,i)=>{
+   let tr=document.createElement('tr');tr.className=visibility;
+   let th=document.createElement('th');th.className='team';th.textContent=(i+1)+'組';tr.append(th);
+   for(let d=start;d<=end;d++){
+    let td=document.createElement('td');
+    let diff=Math.round((Date.UTC(y,m-1,d)-Date.UTC(2026,10,1))/86400000);
+    let shift=pat[((diff%16)+16)%16];td.textContent=shift;td.className='shift shift-'+shift;tr.append(td);
+   }
+   tbody.append(tr);
+  });
+ }
+ appendSection(1,days,'landscape-only');
+ appendSection(1,Math.min(15,days),'portrait-only');
+ if(days>15)appendSection(16,days,'portrait-only');
+ t.append(thead,tbody);
  if(animate){t.classList.remove('page-turn','turn-next','turn-prev');void t.offsetWidth;t.classList.add('page-turn');if(direction>0)t.classList.add('turn-next');else if(direction<0)t.classList.add('turn-prev');}
 }
 year.addEventListener('change',()=>render(true));month.addEventListener('change',()=>render(true));render();
