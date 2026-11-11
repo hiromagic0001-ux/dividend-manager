@@ -22,6 +22,8 @@ h1.app-title{font-size:20px;line-height:1.3;margin:0;padding:12px 14px 10px;font
 main{max-width:1100px;margin:auto;padding:16px;touch-action:pan-y pinch-zoom}
 .calendar-toolbar{display:flex;gap:8px;align-items:center;padding:10px;background:#e9edf2;border-bottom:1px solid var(--line)}
 .calendar-toolbar select{font-size:17px;font-weight:700;padding:7px 9px;border:1px solid #aab3bd;border-radius:8px;background:white;color:var(--ink)}
+.calendar-toolbar .current-month-button{font-size:14px;font-weight:700;padding:7px 12px;border:1px solid #aab3bd;border-radius:8px;background:#fff;color:var(--ink);white-space:nowrap}
+.calendar-toolbar .current-month-button:active{background:#e2f3df}
 .wrap{overflow-x:auto;background:white;border:1px solid #9aa3ad;border-radius:10px;touch-action:pan-y}
 .page-stack{position:relative;isolation:isolate}
 .page-underlay{position:absolute;z-index:-1;inset:0;background:#fff;border:1px solid #aeb7c1;border-radius:9px;transform:translateX(var(--underlay-x,0px)) translateY(6px) scale(.994);box-shadow:0 4px 9px rgba(32,40,50,.13);transition:transform .26s cubic-bezier(.22,.72,.25,1)}
@@ -81,7 +83,7 @@ tbody th.team{background:#f1f3f6}
 <main>
 <h1 class="app-title">勤務カレンダー</h1>
 <div class="wrap">
-<div class="calendar-toolbar"><select id="year" aria-label="年"></select><select id="month" aria-label="月"></select></div>
+<div class="calendar-toolbar"><select id="year" aria-label="年"></select><select id="month" aria-label="月"></select><button type="button" class="current-month-button" id="currentMonth">当月</button></div>
 <div class="page-stack"><div class="page-underlay" aria-hidden="true"></div><table id="calendar" aria-label="組別勤務表"></table></div></div>
 </main>
 <script>
@@ -152,7 +154,14 @@ function render(animate=false,direction=0){
  t.append(thead,tbody);
  if(animate){t.classList.remove('page-turn','turn-next','turn-prev');void t.offsetWidth;t.classList.add('page-turn');if(direction>0)t.classList.add('turn-next');else if(direction<0)t.classList.add('turn-prev');}
 }
-year.addEventListener('change',()=>render(true));month.addEventListener('change',()=>render(true));render();
+year.addEventListener('change',()=>render(true));month.addEventListener('change',()=>render(true));
+document.getElementById('currentMonth').addEventListener('click',()=>{
+ const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'numeric'}).formatToParts(new Date());
+ year.value=String(Number(parts.find(p=>p.type==='year').value));
+ month.value=String(Number(parts.find(p=>p.type==='month').value));
+ render(true);
+});
+render();
 
 // 画面内のどこからでも左右スワイプで月を切り替える。
 const pageStack=document.querySelector('.page-stack');
