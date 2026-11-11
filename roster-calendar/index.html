@@ -62,7 +62,9 @@ tbody th.team{background:#f1f3f6}
  .page-stack{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
  #calendar{height:100%;min-height:100%;width:100%}
  #calendar tbody{height:100%}
- #calendar tbody tr{height:10%}
+ #calendar tbody tr:not(.section-gap){height:calc((100% - 14px)/10)}
+ #calendar tbody tr.section-gap{height:14px}
+ #calendar tbody tr.section-gap td{height:14px;padding:0;border:0;background:#f3f5f8}
  #calendar th,#calendar td{vertical-align:middle;padding-top:6px;padding-bottom:6px}
 }
 @media(orientation:landscape),(min-width:701px){
@@ -136,7 +138,11 @@ function render(animate=false,direction=0){
  }
  appendSection(1,days,'landscape-only');
  appendSection(1,Math.min(15,days),'portrait-only');
- if(days>15)appendSection(16,days,'portrait-only');
+ if(days>15){
+  const gap=document.createElement('tr');gap.className='portrait-only section-gap';
+  const gapCell=document.createElement('td');gapCell.colSpan=16;gapCell.setAttribute('aria-hidden','true');gap.append(gapCell);tbody.append(gap);
+  appendSection(16,days,'portrait-only');
+ }
  t.append(thead,tbody);
  if(animate){t.classList.remove('page-turn','turn-next','turn-prev');void t.offsetWidth;t.classList.add('page-turn');if(direction>0)t.classList.add('turn-next');else if(direction<0)t.classList.add('turn-prev');}
 }
