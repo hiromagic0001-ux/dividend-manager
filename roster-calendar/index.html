@@ -166,13 +166,13 @@ function changeMonthBy(delta){
  clearSwipeStyles();
  turnPending=false;
 }
-calendarWrap.addEventListener('pointerdown',e=>{
+document.addEventListener('pointerdown',e=>{
  if(e.pointerType!=='touch'||turnPending||e.target.closest('select,button,input'))return;
  swipePointer=e.pointerId;swipeStartX=e.clientX;swipeDeltaX=0;
  pageStack.classList.add('is-dragging');
- calendarWrap.setPointerCapture(e.pointerId);
+ if(e.target.setPointerCapture)e.target.setPointerCapture(e.pointerId);
 });
-calendarWrap.addEventListener('pointermove',e=>{
+document.addEventListener('pointermove',e=>{
  if(swipePointer!==e.pointerId||turnPending)return;
  swipeDeltaX=e.clientX-swipeStartX;
  const width=pageStack.clientWidth||calendarWrap.clientWidth;
@@ -204,8 +204,8 @@ function finishSwipe(e){
  }
  swipeDeltaX=0;
 }
-calendarWrap.addEventListener('pointerup',finishSwipe);
-calendarWrap.addEventListener('pointercancel',finishSwipe);
+document.addEventListener('pointerup',finishSwipe);
+document.addEventListener('pointercancel',finishSwipe);
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }
