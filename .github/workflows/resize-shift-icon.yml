@@ -1,0 +1,26 @@
+name: Resize shift calendar icon
+on:
+  push:
+    paths:
+      - ".github/workflows/resize-shift-icon.yml"
+jobs:
+  resize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install sharp
+      - name: Create 512px icon from the existing original
+        run: |
+          node -e "require('sharp')('roster-calendar/icon-180.png').resize(512,512,{fit:'contain'}).png().toFile('roster-calendar/icon-512.png')"
+      - name: Commit resized icon
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add roster-calendar/icon-512.png
+          git commit -m "Resize shift calendar app icon to 512px"
+          git push
