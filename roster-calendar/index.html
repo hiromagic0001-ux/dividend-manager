@@ -26,11 +26,8 @@ main{max-width:1100px;margin:auto;padding:16px;touch-action:pan-y pinch-zoom}
 .calendar-toolbar .current-month-button:active{background:#e2f3df}
 .wrap{overflow-x:auto;background:white;border:1px solid #9aa3ad;border-radius:10px;touch-action:pan-y}
 .page-stack{position:relative;isolation:isolate}
-.page-underlay{position:absolute;z-index:-1;inset:0;background:#fff;border:1px solid #aeb7c1;border-radius:9px;transform:translateX(var(--underlay-x,0px)) translateY(6px) scale(.994);box-shadow:0 4px 9px rgba(32,40,50,.13);transition:transform .26s cubic-bezier(.22,.72,.25,1)}
-.page-stack{--underlay-x:0px}
-#calendar{will-change:transform;transition:transform .26s cubic-bezier(.22,.72,.25,1)}
-.page-stack.is-dragging #calendar,.page-stack.is-dragging .page-underlay{transition:none}
-.page-stack.is-settling #calendar,.page-stack.is-settling .page-underlay{transition:transform .26s cubic-bezier(.22,.72,.25,1)}
+.page-underlay{display:none}
+.page-stack{--underlay-x:0px} #calendar{transform:none!important;transition:none!important;animation:none!important}
 th.team{user-select:none;-webkit-user-select:none}
 table{border-collapse:collapse;min-width:704px;width:704px;table-layout:fixed}
 th,td{border:1px solid var(--line);text-align:center;padding:7px 5px;min-width:44px}
@@ -42,11 +39,6 @@ tbody th.team{background:#f1f3f6}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0;font-size:14px}
 .note{font-size:12px;color:#626d79;line-height:1.6;margin-top:14px}
 .warning{background:#fff7e6;border:1px solid #f0d28b;padding:10px 12px;border-radius:9px;font-size:13px;line-height:1.55;margin-top:12px}
-@keyframes pageTurn{0%{transform:perspective(900px) rotateY(0deg) translateX(0);filter:brightness(1);box-shadow:0 0 0 rgba(32,40,50,0)}45%{transform:perspective(900px) rotateY(var(--turn-angle,-8deg)) translateX(var(--turn-shift,0px));filter:brightness(.96);box-shadow:0 9px 16px rgba(32,40,50,.2)}100%{transform:perspective(900px) rotateY(0deg) translateX(0);filter:brightness(1);box-shadow:0 0 0 rgba(32,40,50,0)}}
-#calendar.page-turn{transform-origin:center center;backface-visibility:hidden;animation:pageTurn .46s cubic-bezier(.22,.72,.25,1)}
-#calendar.page-turn.turn-next{transform-origin:left center;--turn-angle:-11deg;--turn-shift:-2px}
-#calendar.page-turn.turn-prev{transform-origin:right center;--turn-angle:11deg;--turn-shift:2px}
-@media(prefers-reduced-motion:reduce){#calendar.page-turn{animation:none}}
 @media(max-width:600px){main{padding:10px}th,td{min-width:39px;padding:7px 3px}.shift{font-size:16px}}
 @media(orientation:portrait) and (max-width:700px){
  table{min-width:0;width:100%;table-layout:fixed}
@@ -152,7 +144,7 @@ function render(animate=false,direction=0){
   appendSection(16,days,'portrait-only');
  }
  t.append(thead,tbody);
- if(animate){t.classList.remove('page-turn','turn-next','turn-prev');void t.offsetWidth;t.classList.add('page-turn');if(direction>0)t.classList.add('turn-next');else if(direction<0)t.classList.add('turn-prev');}
+ 
 }
 year.addEventListener('change',()=>render(true));month.addEventListener('change',()=>render(true));
 document.getElementById('currentMonth').addEventListener('click',()=>{
