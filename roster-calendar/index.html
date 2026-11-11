@@ -54,6 +54,17 @@ tbody th.team{background:#f1f3f6}
  .landscape-only{display:none}
  .portrait-only{display:table-row}
 }
+@media(orientation:portrait) and (max-width:700px){
+ main{height:100dvh;min-height:100dvh;display:flex;flex-direction:column;gap:6px;padding:8px}
+ h1.app-title{flex:0 0 auto;padding:5px 8px;font-size:17px}
+ .wrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:auto}
+ .calendar-toolbar{flex:0 0 auto;padding:7px;gap:7px}
+ .page-stack{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+ #calendar{height:100%;min-height:100%;width:100%}
+ #calendar tbody{height:100%}
+ #calendar tbody tr{height:10%}
+ #calendar th,#calendar td{vertical-align:middle;padding-top:6px;padding-bottom:6px}
+}
 @media(orientation:landscape),(min-width:701px){
  .portrait-only{display:none}
  .landscape-only{display:table-row}
