@@ -6,6 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="わたしの勤務表">
 <meta name="theme-color" content="#f3f5f8">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="../roster-calendar/icon-180.png">
 <title>わたしの勤務表</title>
 <style>
 :root{--line:#9aa3ad;--head:#e9edf2;--sat:#1769c2;--sun:#d12f2f;--ink:#202832}
@@ -172,6 +174,10 @@ $('wrap').addEventListener('touchstart',e=>{if(e.touches.length!==1||e.target.cl
 $('wrap').addEventListener('touchend',e=>{if(!swiping||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;swiping=false;if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.2)return;const n=new Date(Number(year.value),Number(month.value)-1+(dx<0?1:-1),1);if(n.getFullYear()<2026||n.getFullYear()>2099)return;year.value=String(n.getFullYear());month.value=String(n.getMonth()+1);render()},{passive:true});
 render();
 })();
+</script>
+
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
 </script>
 </body>
 </html>
