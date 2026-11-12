@@ -153,7 +153,8 @@ function openEditor(cell){
  const k=cell.dataset.date,r=Number(cell.dataset.row),base=cell.dataset.base,v=currentShift(r,k,base);editing={k,r,base};
  $('editTitle').textContent=k.replaceAll('-','/')+'　'+(r+1)+'組';
  const box=$('choices');box.replaceChildren();
- const previousDate=new Date(k+'T00:00:00');previousDate.setDate(previousDate.getDate()-1);const previousBase=defaultShift(r,previousDate);\n options(base,previousBase).forEach(choice=>{const b=document.createElement('button');b.type='button';b.textContent=choice;if(choice===v)b.style.border='2px solid #176b50';b.addEventListener('click',()=>{const id=k+'|'+r;if(choice===base)delete overrides[id];else overrides[id]=choice;persist();closeEditor();render()});box.append(b)});
+ const previousDate=new Date(k+'T00:00:00');previousDate.setDate(previousDate.getDate()-1);const previousBase=defaultShift(r,previousDate);
+ options(base,previousBase).forEach(choice=>{const b=document.createElement('button');b.type='button';b.textContent=choice;if(choice===v)b.style.border='2px solid #176b50';b.addEventListener('click',()=>{const id=k+'|'+r;if(choice===base)delete overrides[id];else overrides[id]=choice;persist();closeEditor();render()});box.append(b)});
  $('editShade').classList.add('open')
 }
 function closeEditor(){editing=null;$('editShade').classList.remove('open')}
