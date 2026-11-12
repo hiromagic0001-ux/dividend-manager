@@ -30,7 +30,7 @@ tbody th.team{background:#f1f3f6}
 .shift-ユ,.shift-ユ残,.shift-ユ早{background:#e2f3df}
 .shift-休{background:#eceff3;color:#6b7280}
 .shift-有給{background:#f7e5f2;color:#923d7b}
-.shift .cell-value{display:block;min-height:1.25em}
+.shift .cell-value{display:block;min-height:1.25em}\n.shift.is-changed .cell-value{color:#c2185b;text-shadow:0 0 .01px currentColor}
 .legend{display:flex;gap:12px;flex-wrap:wrap;margin:10px 2px;font-size:12px;color:#59636e}
 .legend span{white-space:nowrap}
 .help{font-size:12px;color:#626d79;line-height:1.55;margin:10px 2px}
@@ -139,7 +139,7 @@ function section(tbody,thead,y,m,start,end,mode,hs){
  for(let d=start;d<=end;d++){const dt=new Date(y,m-1,d),k=key(y,m,d),th=document.createElement('th');th.innerHTML=d+'<br>'+jp(dt);if(k===todayKey)th.classList.add('today');else if(hs.has(k)||dt.getDay()===0)th.classList.add('sun');else if(dt.getDay()===6)th.classList.add('sat');head.append(th)}
  (mode==='landscape-only'?thead:tbody).append(head);
  patterns.forEach((pat,r)=>{const tr=document.createElement('tr');tr.className=mode;const th=document.createElement('th');th.className='team';th.textContent=(r+1)+'組';tr.append(th);
- for(let d=start;d<=end;d++){const dt=new Date(y,m-1,d),k=key(y,m,d),base=defaultShift(r,dt),v=currentShift(r,k,base),td=document.createElement('td');td.className='shift '+cls(v);td.dataset.date=k;td.dataset.row=String(r);td.dataset.base=base;td.setAttribute('role','button');td.setAttribute('tabindex','0');td.setAttribute('aria-label',k+' '+(r+1)+'組 '+v+'。タップして変更');const span=document.createElement('span');span.className='cell-value';span.textContent=v;td.append(span);tr.append(td)}
+ for(let d=start;d<=end;d++){const dt=new Date(y,m-1,d),k=key(y,m,d),base=defaultShift(r,dt),v=currentShift(r,k,base),td=document.createElement('td');td.className='shift '+cls(v)+(Object.prototype.hasOwnProperty.call(overrides,k+'|'+r)?' is-changed':'');td.dataset.date=k;td.dataset.row=String(r);td.dataset.base=base;td.setAttribute('role','button');td.setAttribute('tabindex','0');td.setAttribute('aria-label',k+' '+(r+1)+'組 '+v+'。タップして変更');const span=document.createElement('span');span.className='cell-value';span.textContent=v;td.append(span);tr.append(td)}
  tbody.append(tr)})
 }
 function render(){
