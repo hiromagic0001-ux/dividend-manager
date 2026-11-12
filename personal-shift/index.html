@@ -3,104 +3,173 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#176b50">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="わたしの勤務表">
+<meta name="theme-color" content="#f3f5f8">
 <title>わたしの勤務表</title>
 <style>
-:root{color-scheme:light;--green:#176b50;--pale:#e9f4ef;--line:#dce5e0;--ink:#20332b;--muted:#68776f}
-*{box-sizing:border-box}body{margin:0;background:#f4f7f5;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-main{max-width:720px;margin:auto;padding:18px 14px 40px}
-header{background:var(--green);color:white;padding:20px 18px;border-radius:18px;margin-bottom:16px}
-h1{font-size:23px;margin:0 0 5px}header p{margin:0;font-size:13px;opacity:.9}
-.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;margin:12px 0;box-shadow:0 2px 8px #173d2810}
-.monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.monthbar strong{font-size:20px}
-button,select,input{font:inherit}
-button{border:0;border-radius:10px;padding:10px 13px;background:var(--green);color:white;font-weight:600}
-button.secondary{background:var(--pale);color:var(--green)}
-button.danger{background:#fff0ef;color:#a3312a}
-.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
-.weekday{text-align:center;font-size:12px;color:var(--muted);padding:5px 0}
-.day{touch-action:manipulation;-webkit-tap-highlight-color:transparent;pointer-events:auto;min-height:66px;padding:6px 3px;background:#fbfcfb;border:1px solid var(--line);border-radius:9px;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:5px}
-.day:disabled{opacity:.28}.day.today{outline:2px solid #8ab9a5}.day.selected{background:var(--pale);border:2px solid var(--green);padding:5px 2px}
-.daynum{font-size:14px}.tag{font-size:10px;line-height:1.25;font-weight:700;overflow-wrap:anywhere}
-.tag.work{color:#176b50}.tag.off{color:#586a9a}.tag.paid{color:#a06a18}.tag.other{color:#7c5795}
-.formrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-select,input[type=date],input[type=text]{min-height:42px;border:1px solid #cbd8d0;border-radius:9px;padding:8px 10px;background:white;color:var(--ink)}
-select{flex:1;min-width:130px}.note{width:100%;margin-top:9px}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.small{font-size:12px;color:var(--muted);line-height:1.5}
-.selected-date{font-weight:700;margin-bottom:10px}
-.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:12px}
-.legend span{display:flex;align-items:center;gap:4px}
-hr{border:0;border-top:1px solid var(--line);margin:14px 0}
-@media(max-width:380px){.day{min-height:58px}.tag{font-size:9px}.daynum{font-size:13px}}
+:root{--line:#9aa3ad;--head:#e9edf2;--sat:#1769c2;--sun:#d12f2f;--ink:#202832}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f5f8;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+main{max-width:1100px;margin:auto;padding:16px}
+.toolbar{display:flex;gap:8px;align-items:center;padding:10px;background:#e9edf2;border-bottom:1px solid var(--line)}
+.toolbar select,.toolbar button{font:inherit;font-size:16px;font-weight:700;padding:7px 9px;border:1px solid #aab3bd;border-radius:8px;background:white;color:var(--ink)}
+.toolbar button{font-size:14px;white-space:nowrap}
+.wrap{overflow-x:auto;background:white;border:1px solid #9aa3ad;border-radius:10px;touch-action:pan-y}
+table{border-collapse:collapse;min-width:704px;width:704px;table-layout:fixed}
+th,td{border:1px solid var(--line);text-align:center;padding:7px 5px;min-width:44px}
+thead th{background:var(--head);font-weight:700}
+th.today{background:#269b50!important;color:#fff!important}
+th.team{user-select:none;-webkit-user-select:none;position:sticky;left:0;z-index:2;background:#e9edf2;min-width:65px}
+tbody th.team{background:#f1f3f6}
+.sat{color:var(--sat)!important}.sun,.holiday{color:var(--sun)!important}
+.shift{font-size:18px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.shift:active{filter:brightness(.94)}
+.shift-ア,.shift-ア残,.shift-ア早{background:#dceeff}
+.shift-ヤ,.shift-ヤ残,.shift-ヤ早{background:#ffe8cc}
+.shift-ユ,.shift-ユ残,.shift-ユ早{background:#e2f3df}
+.shift-休{background:#eceff3;color:#6b7280}
+.shift-有給{background:#f7e5f2;color:#923d7b}
+.shift .cell-value{display:block;min-height:1.25em}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin:10px 2px;font-size:12px;color:#59636e}
+.legend span{white-space:nowrap}
+.help{font-size:12px;color:#626d79;line-height:1.55;margin:10px 2px}
+.backup{display:flex;gap:8px;flex-wrap:wrap;margin:10px 2px}
+.backup button{font:inherit;font-size:13px;padding:8px 10px;border:1px solid #aab3bd;border-radius:8px;background:#fff;color:var(--ink)}
+#status{font-size:12px;color:#176b50;margin:5px 2px}
+.portrait-only{display:none}
+#editShade{display:none;position:fixed;inset:0;background:#0007;z-index:20;align-items:flex-end;justify-content:center;padding:12px}
+#editShade.open{display:flex}
+#editPanel{width:min(100%,480px);background:white;border-radius:16px 16px 12px 12px;padding:16px;box-shadow:0 8px 30px #0003}
+#editTitle{font-weight:800;font-size:17px;margin:0 0 12px}
+#choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#choices button{min-height:48px;border:1px solid #b8c2cb;border-radius:10px;background:#f8fafb;color:#202832;font:inherit;font-weight:800}
+#choices button:active{background:#e1eee7}
+#editActions{display:flex;gap:8px;margin-top:12px}
+#editActions button{flex:1;min-height:42px;border:1px solid #b8c2cb;border-radius:9px;background:#fff;color:#202832;font:inherit}
+#editActions #resetCell{background:#e9f4ef;color:#176b50;border-color:#a8c9b8}
+#editActions #closeEditor{background:#edf0f3}
+@media(orientation:landscape){main{max-width:none;width:100%;padding:8px 12px}.wrap{max-height:calc(100dvh - 80px)}}
+@media(orientation:portrait) and (max-width:700px){
+ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+ main{width:100%;max-width:none;height:100dvh;overflow:hidden;min-height:100dvh;display:flex;flex-direction:column;gap:5px;padding:6px 0}
+ .wrap{width:100%;border-left:0;border-right:0;border-radius:0;overflow-x:hidden;overflow-y:auto;flex:1 1 auto;min-height:0;touch-action:pan-y}
+ .toolbar{flex:0 0 auto;padding:6px;gap:6px}
+ .toolbar select{font-size:15px;min-width:0}
+ table{min-width:0;width:100%;table-layout:fixed}
+ th,td{min-width:0;width:auto;padding:5px 1px;font-size:12px;overflow-wrap:anywhere}
+ th.team{width:44px;min-width:44px}
+ .shift{font-size:15px}
+ .landscape-only{display:none}
+ .portrait-only{display:table-row}
+ .section-gap{height:6px}
+ .section-gap td{height:6px;padding:0;border:0;background:#f3f5f8}
+}
+@media(orientation:landscape),(min-width:701px){.portrait-only{display:none}.landscape-only{display:table-row}}
+@media(max-width:380px){.shift{font-size:13px}th,td{padding-left:0;padding-right:0}}
 </style>
 </head>
 <body>
 <main>
-<header><h1>わたしの勤務表</h1><p>自分のスマホで入力・変更できる勤務カレンダー</p></header>
-<section class="panel">
-<div class="monthbar"><button class="secondary" id="prev" aria-label="前の月">‹</button><strong id="monthTitle"></strong><button class="secondary" id="next" aria-label="次の月">›</button></div>
-<div class="calendar" id="calendar"></div>
-<div class="legend"><span>🟢 出勤</span><span>🔵 休み</span><span>🟠 有給</span><span>🟣 その他</span></div>
-</section>
-<section class="panel">
-<div class="selected-date" id="selectedDate"></div>
-<div class="formrow">
-<select id="kind" aria-label="勤務の種類">
-<option value="">勤務を選択</option><option value="出勤">出勤</option><option value="休み">休み</option><option value="有給">有給</option><option value="その他">その他</option>
-</select>
-<button id="save">保存する</button>
+<div class="wrap" id="wrap">
+<div class="toolbar">
+<select id="year" aria-label="年"></select>
+<select id="month" aria-label="月"></select>
+<button type="button" id="currentMonth">当月</button>
 </div>
-<input class="note" id="note" type="text" maxlength="60" placeholder="メモ（任意）">
-<div class="actions"><button class="secondary" id="clear">入力をクリア</button><button class="danger" id="remove">この日の勤務を削除</button></div>
-<p class="small">日付を選び、勤務の種類を選択して「保存する」を押してください。入力内容はこのスマホのブラウザに自動保存されます。</p>
-</section>
-<section class="panel">
-<strong>データのバックアップ</strong>
-<p class="small">機種変更やブラウザのデータ削除に備えて、定期的にバックアップを保存してください。</p>
-<div class="actions"><button class="secondary" id="export">バックアップを書き出す</button><button class="secondary" id="importBtn">バックアップを読み込む</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
-<p class="small" id="backupStatus" aria-live="polite"></p>
-</section>
-<p class="small">この勤務表のデータは、入力したスマホ・ブラウザ内だけに保存されます。他の人や別の端末とは共有されません。</p>
+<table id="calendar" aria-label="個人用組別勤務表"></table>
+</div>
+<div class="legend"><span>🟦 ア系</span><span>🟧 ヤ系</span><span>🟩 ユ系</span><span>⬜ 休</span><span>🟪 有給</span></div>
+<p class="help">日付の勤務記号をタップすると変更できます。変更内容はこのスマホのブラウザ内に保存されます。初期表示は元の勤務表と同じ1組〜4組のパターンです。</p>
+<div class="backup">
+<button type="button" id="export">バックアップを書き出す</button>
+<button type="button" id="importBtn">バックアップを読み込む</button>
+<input id="importFile" type="file" accept="application/json,.json" hidden>
+</div>
+<div id="status" aria-live="polite"></div>
 </main>
+<div id="editShade" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+<div id="editPanel">
+<p id="editTitle">勤務を選択</p>
+<div id="choices"></div>
+<div id="editActions"><button type="button" id="resetCell">元の勤務に戻す</button><button type="button" id="closeEditor">閉じる</button></div>
+</div>
+</div>
 <script>
 (()=>{
-const KEY='personal-shift-calendar-v1';
-const names=['日','月','火','水','木','金','土'];
-const today=new Date();let view=new Date(today.getFullYear(),today.getMonth(),1);
-let selected=iso(today);let entries=load();
+const KEY='personal-shift-calendar-v2';
+const anchor=new Date(2026,10,1);
+const patterns=[
+ ['休','ヤ','ヤ','ヤ','ヤ','休','休','ア','ア','ア','ア','休','ユ','ユ','ユ','ユ'],
+ ['ヤ','休','休','ア','ア','ア','ア','休','ユ','ユ','ユ','ユ','休','ヤ','ヤ','ヤ'],
+ ['ア','ア','ア','休','ユ','ユ','ユ','ユ','休','ヤ','ヤ','ヤ','ヤ','休','休','ア'],
+ ['ユ','ユ','ユ','ユ','休','ヤ','ヤ','ヤ','ヤ','休','休','ア','ア','ア','ア','休']
+];
 const $=id=>document.getElementById(id);
-function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch(e){return {}}}
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(entries));$('backupStatus').textContent='保存しました。'}catch(e){$('backupStatus').textContent='保存できませんでした。ブラウザの空き容量や設定を確認してください。'}}
+const todayParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());
+const todayKey=todayParts.find(p=>p.type==='year').value+'-'+String(Number(todayParts.find(p=>p.type==='month').value)).padStart(2,'0')+'-'+String(Number(todayParts.find(p=>p.type==='day').value)).padStart(2,'0');
+let overrides=load(),editing=null;
+const year=$('year'),month=$('month');
+const currentYear=Number(todayParts.find(p=>p.type==='year').value),currentMonth=Number(todayParts.find(p=>p.type==='month').value);
+for(let y=2026;y<=2099;y++){const o=document.createElement('option');o.value=y;o.textContent=y+'年';year.append(o)}
+for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m+'月';month.append(o)}
+year.value=String(currentYear);month.value=String(currentMonth);
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch(e){return {}}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(overrides));$('status').textContent='この端末に保存しました。'}catch(e){$('status').textContent='保存できませんでした。ブラウザの設定を確認してください。'}}
+function key(y,m,d){return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function defaultShift(row,date){const diff=Math.round((Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())-Date.UTC(2026,10,1))/86400000);return patterns[row][((diff%16)+16)%16]}
+function currentShift(row,k,base){return Object.prototype.hasOwnProperty.call(overrides,k+'|'+row)?overrides[k+'|'+row]:base}
+function options(base){if(base==='ア')return ['ア','ア残','ア早','有給'];if(base==='ユ')return ['ユ','ユ残','ユ早'];if(base==='ヤ')return ['ヤ','ヤ残','ヤ早'];return ['休']}
+function cls(v){if(v==='有給')return 'shift-有給';if(v.startsWith('ア'))return 'shift-ア';if(v.startsWith('ヤ'))return 'shift-ヤ';if(v.startsWith('ユ'))return 'shift-ユ';return 'shift-休'}
+function jp(d){return new Intl.DateTimeFormat('ja-JP',{weekday:'short'}).format(d)}
+function nthMonday(y,m,n){const d=new Date(y,m-1,1);return 1+((8-d.getDay())%7)+(n-1)*7}
+function equinox(y,spring){return Math.floor(spring?20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4):23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4))}
+function holidays(y){
+ const h=new Set([y+'-01-01',y+'-02-11',y+'-02-23',y+'-04-29',y+'-05-03',y+'-05-04',y+'-05-05',y+'-08-11',y+'-11-03',y+'-11-23']);
+ const add=(m,d)=>h.add(key(y,m,d));
+ add(3,equinox(y,true));add(9,equinox(y,false));add(1,nthMonday(y,1,2));add(7,nthMonday(y,7,3));add(9,nthMonday(y,9,3));add(10,nthMonday(y,10,2));
+ const base=[...h].map(s=>new Date(s+'T00:00:00'));
+ for(const d of base)if(d.getDay()===0){let x=new Date(d);do{x.setDate(x.getDate()+1)}while(h.has(key(y,x.getMonth()+1,x.getDate())));add(x.getMonth()+1,x.getDate())}
+ for(let m=1;m<=12;m++){const last=new Date(y,m,0).getDate();for(let d=2;d<last;d++){const cur=new Date(y,m-1,d),p=new Date(y,m-1,d-1),n=new Date(y,m-1,d+1);if(!h.has(key(y,m,d))&&h.has(key(y,m-1,p.getDate()))&&h.has(key(y,m+1,n.getDate()))&&cur.getDay()!==0)add(m,d)}}
+ return h
+}
+function section(tbody,thead,y,m,start,end,mode,hs){
+ const head=document.createElement('tr');head.className=mode;
+ const label=document.createElement('th');label.className='team';label.textContent='組';head.append(label);
+ for(let d=start;d<=end;d++){const dt=new Date(y,m-1,d),k=key(y,m,d),th=document.createElement('th');th.innerHTML=d+'<br>'+jp(dt);if(k===todayKey)th.classList.add('today');else if(hs.has(k)||dt.getDay()===0)th.classList.add('sun');else if(dt.getDay()===6)th.classList.add('sat');head.append(th)}
+ (mode==='landscape-only'?thead:tbody).append(head);
+ patterns.forEach((pat,r)=>{const tr=document.createElement('tr');tr.className=mode;const th=document.createElement('th');th.className='team';th.textContent=(r+1)+'組';tr.append(th);
+ for(let d=start;d<=end;d++){const dt=new Date(y,m-1,d),k=key(y,m,d),base=defaultShift(r,dt),v=currentShift(r,k,base),td=document.createElement('td');td.className='shift '+cls(v);td.dataset.date=k;td.dataset.row=String(r);td.dataset.base=base;td.setAttribute('role','button');td.setAttribute('tabindex','0');td.setAttribute('aria-label',k+' '+(r+1)+'組 '+v+'。タップして変更');const span=document.createElement('span');span.className='cell-value';span.textContent=v;td.append(span);tr.append(td)}
+ tbody.append(tr)})
+}
 function render(){
-$('monthTitle').textContent=view.getFullYear()+'年 '+(view.getMonth()+1)+'月';
-const cal=$('calendar');cal.innerHTML='';
-names.forEach(n=>{const el=document.createElement('div');el.className='weekday';el.textContent=n;cal.append(el)});
-const first=new Date(view.getFullYear(),view.getMonth(),1).getDay();
-const count=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();
-for(let i=0;i<first;i++){const blank=document.createElement('div');cal.append(blank)}
-for(let d=1;d<=count;d++){
-const date=iso(new Date(view.getFullYear(),view.getMonth(),d));const entry=entries[date];
-const b=document.createElement('button');b.type='button';b.dataset.date=date;b.className='day'+(date===selected?' selected':'')+(date===iso(today)?' today':'');b.setAttribute('aria-label',date+(entry?' '+entry.kind:''));b.innerHTML='<span class="daynum">'+d+'</span>';
-if(entry){const tag=document.createElement('span');tag.className='tag '+classFor(entry.kind);tag.textContent=entry.kind;b.append(tag)}
-cal.append(b)
+ const y=Number(year.value),m=Number(month.value),days=new Date(y,m,0).getDate(),hs=holidays(y),table=$('calendar'),thead=document.createElement('thead'),tbody=document.createElement('tbody');
+ section(tbody,thead,y,m,1,days,'landscape-only',hs);
+ section(tbody,thead,y,m,1,Math.min(15,days),'portrait-only',hs);
+ if(days>15){const gap=document.createElement('tr');gap.className='portrait-only section-gap';const td=document.createElement('td');td.colSpan=17;gap.append(td);tbody.append(gap);section(tbody,thead,y,m,16,days,'portrait-only',hs)}
+ table.replaceChildren(thead,tbody)
 }
-$('selectedDate').textContent=selected.replaceAll('-','年').replace(/年(\d{2})年/,'年$1月')+'日 の勤務';
-const current=entries[selected];$('kind').value=current?.kind||'';$('note').value=current?.note||'';
+function openEditor(cell){
+ const k=cell.dataset.date,r=Number(cell.dataset.row),base=cell.dataset.base,v=currentShift(r,k,base);editing={k,r,base};
+ $('editTitle').textContent=k.replaceAll('-','/')+'　'+(r+1)+'組';
+ const box=$('choices');box.replaceChildren();
+ options(base).forEach(choice=>{const b=document.createElement('button');b.type='button';b.textContent=choice;if(choice===v)b.style.border='2px solid #176b50';b.addEventListener('click',()=>{const id=k+'|'+r;if(choice===base)delete overrides[id];else overrides[id]=choice;persist();closeEditor();render()});box.append(b)});
+ $('editShade').classList.add('open')
 }
-function classFor(k){return k==='出勤'?'work':k==='休み'?'off':k==='有給'?'paid':'other'}
-function fill(){const d=new Date(selected+'T00:00:00');view=new Date(d.getFullYear(),d.getMonth(),1)}
-$('calendar').addEventListener('click',e=>{const b=e.target.closest('button[data-date]');if(!b)return;selected=b.dataset.date;fill();render()});
-$('prev').addEventListener('click',()=>{view.setMonth(view.getMonth()-1);render()});
-$('next').addEventListener('click',()=>{view.setMonth(view.getMonth()+1);render()});
-$('save').addEventListener('click',()=>{const kind=$('kind').value;if(!kind){alert('勤務の種類を選択してください。');return}entries[selected]={kind,note:$('note').value.trim()};persist();render()});
-$('clear').addEventListener('click',()=>{$('kind').value='';$('note').value=''});
-$('remove').addEventListener('click',()=>{if(!entries[selected]){alert('この日に登録された勤務はありません。');return}if(confirm('この日の勤務を削除しますか？')){delete entries[selected];persist();render()}});
-$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({app:'personal-shift-calendar',version:1,entries},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='勤務表バックアップ-'+iso(today)+'.json';a.click();URL.revokeObjectURL(url);$('backupStatus').textContent='バックアップファイルを書き出しました。'});
+function closeEditor(){editing=null;$('editShade').classList.remove('open')}
+$('calendar').addEventListener('click',e=>{const cell=e.target.closest('td[data-date]');if(cell)openEditor(cell)});
+$('calendar').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('td[data-date]')){e.preventDefault();openEditor(e.target)}});
+$('closeEditor').addEventListener('click',closeEditor);
+$('editShade').addEventListener('click',e=>{if(e.target===$('editShade'))closeEditor()});
+$('resetCell').addEventListener('click',()=>{if(!editing)return;delete overrides[editing.k+'|'+editing.r];persist();closeEditor();render()});
+year.addEventListener('change',render);month.addEventListener('change',render);
+$('currentMonth').addEventListener('click',()=>{year.value=String(currentYear);month.value=String(currentMonth);render()});
+$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({app:'personal-shift-calendar',version:2,overrides},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='勤務表バックアップ-'+todayKey+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('status').textContent='バックアップを書き出しました。'});
 $('importBtn').addEventListener('click',()=>$('importFile').click());
-$('importFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());const incoming=data.entries;if(!incoming||typeof incoming!=='object'||Array.isArray(incoming))throw new Error();if(!confirm('現在の勤務データを、バックアップの内容に置き換えますか？'))return;entries=incoming;persist();render();$('backupStatus').textContent='バックアップを読み込みました。'}catch(err){alert('バックアップファイルを読み込めませんでした。')}finally{e.target.value=''}});
+$('importFile').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(!data.overrides||typeof data.overrides!=='object'||Array.isArray(data.overrides))throw new Error();if(!confirm('現在の勤務変更をバックアップ内容に置き換えますか？'))return;overrides=data.overrides;persist();render();$('status').textContent='バックアップを読み込みました。'}catch(err){alert('バックアップファイルを読み込めませんでした。')}finally{e.target.value=''}});
+let sx=0,sy=0,swiping=false;
+$('wrap').addEventListener('touchstart',e=>{if(e.touches.length!==1||e.target.closest('select,button')){swiping=false;return}sx=e.touches[0].clientX;sy=e.touches[0].clientY;swiping=true},{passive:true});
+$('wrap').addEventListener('touchend',e=>{if(!swiping||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;swiping=false;if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.2)return;const n=new Date(Number(year.value),Number(month.value)-1+(dx<0?1:-1),1);if(n.getFullYear()<2026||n.getFullYear()>2099)return;year.value=String(n.getFullYear());month.value=String(n.getMonth()+1);render()},{passive:true});
 render();
 })();
 </script>
