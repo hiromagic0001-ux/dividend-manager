@@ -20,7 +20,7 @@ button.secondary{background:var(--pale);color:var(--green)}
 button.danger{background:#fff0ef;color:#a3312a}
 .calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
 .weekday{text-align:center;font-size:12px;color:var(--muted);padding:5px 0}
-.day{min-height:66px;padding:6px 3px;background:#fbfcfb;border:1px solid var(--line);border-radius:9px;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:5px}
+.day{touch-action:manipulation;-webkit-tap-highlight-color:transparent;pointer-events:auto;min-height:66px;padding:6px 3px;background:#fbfcfb;border:1px solid var(--line);border-radius:9px;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:5px}
 .day:disabled{opacity:.28}.day.today{outline:2px solid #8ab9a5}.day.selected{background:var(--pale);border:2px solid var(--green);padding:5px 2px}
 .daynum{font-size:14px}.tag{font-size:10px;line-height:1.25;font-weight:700;overflow-wrap:anywhere}
 .tag.work{color:#176b50}.tag.off{color:#586a9a}.tag.paid{color:#a06a18}.tag.other{color:#7c5795}
@@ -83,15 +83,16 @@ const count=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();
 for(let i=0;i<first;i++){const blank=document.createElement('div');cal.append(blank)}
 for(let d=1;d<=count;d++){
 const date=iso(new Date(view.getFullYear(),view.getMonth(),d));const entry=entries[date];
-const b=document.createElement('button');b.type='button';b.className='day'+(date===selected?' selected':'')+(date===iso(today)?' today':'');b.setAttribute('aria-label',date+(entry?' '+entry.kind:''));b.innerHTML='<span class="daynum">'+d+'</span>';
+const b=document.createElement('button');b.type='button';b.dataset.date=date;b.className='day'+(date===selected?' selected':'')+(date===iso(today)?' today':'');b.setAttribute('aria-label',date+(entry?' '+entry.kind:''));b.innerHTML='<span class="daynum">'+d+'</span>';
 if(entry){const tag=document.createElement('span');tag.className='tag '+classFor(entry.kind);tag.textContent=entry.kind;b.append(tag)}
-b.addEventListener('click',()=>{selected=date;fill();render()});cal.append(b)
+cal.append(b)
 }
 $('selectedDate').textContent=selected.replaceAll('-','年').replace(/年(\d{2})年/,'年$1月')+'日 の勤務';
 const current=entries[selected];$('kind').value=current?.kind||'';$('note').value=current?.note||'';
 }
 function classFor(k){return k==='出勤'?'work':k==='休み'?'off':k==='有給'?'paid':'other'}
 function fill(){const d=new Date(selected+'T00:00:00');view=new Date(d.getFullYear(),d.getMonth(),1)}
+$('calendar').addEventListener('click',e=>{const b=e.target.closest('button[data-date]');if(!b)return;selected=b.dataset.date;fill();render()});
 $('prev').addEventListener('click',()=>{view.setMonth(view.getMonth()-1);render()});
 $('next').addEventListener('click',()=>{view.setMonth(view.getMonth()+1);render()});
 $('save').addEventListener('click',()=>{const kind=$('kind').value;if(!kind){alert('勤務の種類を選択してください。');return}entries[selected]={kind,note:$('note').value.trim()};persist();render()});
