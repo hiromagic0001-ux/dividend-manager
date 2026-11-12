@@ -24,6 +24,9 @@ main{max-width:1100px;margin:auto;padding:16px;touch-action:pan-y pinch-zoom}
 .calendar-toolbar select{font-size:17px;font-weight:700;padding:7px 9px;border:1px solid #aab3bd;border-radius:8px;background:white;color:var(--ink)}
 .calendar-toolbar .current-month-button{font-size:14px;font-weight:700;padding:7px 12px;border:1px solid #aab3bd;border-radius:8px;background:#fff;color:var(--ink);white-space:nowrap}
 .calendar-toolbar .current-month-button:active{background:#e2f3df}
+.calendar-toolbar .backup-button{font-size:12px;font-weight:800;letter-spacing:.2px;padding:7px 9px;border:1px solid #aab3bd;border-radius:8px;background:#fff;color:var(--ink);white-space:nowrap;min-width:48px}
+.calendar-toolbar .backup-button:active{background:#e2f3df}
+@media(orientation:portrait) and (max-width:700px){.calendar-toolbar{gap:5px}.calendar-toolbar select{font-size:14px;padding:6px 4px;min-width:0}.calendar-toolbar .backup-button,.calendar-toolbar .current-month-button{font-size:11px;padding:6px 6px;min-width:0}}
 .wrap{overflow-x:auto;background:white;border:1px solid #9aa3ad;border-radius:10px;touch-action:pan-y}
 .page-stack{position:relative;isolation:isolate}
 .page-underlay{display:none}
@@ -79,18 +82,25 @@ tbody th.team{background:#f1f3f6}
 <body>
 <main>
 <div class="wrap">
-<div class="calendar-toolbar"><select id="year" aria-label="年"></select><select id="month" aria-label="月"></select><button type="button" class="current-month-button" id="currentMonth">当月</button></div>
+<div class="calendar-toolbar"><select id="year" aria-label="年"></select><select id="month" aria-label="月"></select><button type="button" class="backup-button" id="saveBackup">SAVE</button><button type="button" class="backup-button" id="loadBackup">LOAD</button><input type="file" id="backupFile" accept="application/json,.json" hidden><button type="button" class="current-month-button" id="currentMonth">当月</button></div>
 <div class="page-stack"><div class="page-underlay" aria-hidden="true"></div><table id="calendar" aria-label="組別勤務表"></table></div></div>
 </main>
 <script>
 // 基準日：2026年11月1日。元表の上から4行を1組〜4組として登録。
 const anchor = new Date(2026,10,1);
-const patterns = [
+let patterns = [
  ['休','ヤ','ヤ','ヤ','ヤ','休','休','ア','ア','ア','ア','休','ユ','ユ','ユ','ユ'],
  ['ヤ','休','休','ア','ア','ア','ア','休','ユ','ユ','ユ','ユ','休','ヤ','ヤ','ヤ'],
  ['ア','ア','ア','休','ユ','ユ','ユ','ユ','休','ヤ','ヤ','ヤ','ヤ','休','休','ア'],
  ['ユ','ユ','ユ','ユ','休','ヤ','ヤ','ヤ','ヤ','休','休','ア','ア','ア','ア','休']
 ];
+const validPatterns = value => Array.isArray(value) && value.length === 4 &&
+ value.every(row => Array.isArray(row) && row.length === 16 &&
+ row.every(shift => ['休','ヤ','ア','ユ'].includes(shift)));
+try {
+ const storedPatterns = JSON.parse(localStorage.getItem('shiftCalendarPatterns') || 'null');
+ if (validPatterns(storedPatterns)) patterns = storedPatterns;
+} catch (_) {}
 const jp=(n)=>new Intl.DateTimeFormat('ja-JP',{weekday:'short'}).format(n);
 const nthMonday=(y,m,n)=>{let d=new Date(y,m-1,1);return 1+((8-d.getDay())%7)+(n-1)*7};
 function equinox(y, spring){return Math.floor(spring ? 20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4) : 23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4));}
@@ -151,6 +161,32 @@ function render(animate=false,direction=0){
  
 }
 year.addEventListener('change',()=>render(true));month.addEventListener('change',()=>render(true));
+const backupFile=document.getElementById('backupFile');
+document.getElementById('saveBackup').addEventListener('click',()=>{
+ const backup={format:'shift-calendar-backup',version:1,savedAt:new Date().toISOString(),year:Number(year.value),month:Number(month.value),patterns};
+ const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;a.download='勤務表バックアップ-'+new Date().toISOString().slice(0,10)+'.json';
+ document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+document.getElementById('loadBackup').addEventListener('click',()=>backupFile.click());
+backupFile.addEventListener('change',async()=>{
+ const file=backupFile.files&&backupFile.files[0];
+ if(!file)return;
+ try{
+  const data=JSON.parse(await file.text());
+  if(data.format!=='shift-calendar-backup'||data.version!==1||!validPatterns(data.patterns))throw new Error('invalid');
+  patterns=data.patterns;
+  localStorage.setItem('shiftCalendarPatterns',JSON.stringify(patterns));
+  if(Number.isInteger(data.year)&&data.year>=2026&&data.year<=2099)year.value=String(data.year);
+  if(Number.isInteger(data.month)&&data.month>=1&&data.month<=12)month.value=String(data.month);
+  render();
+  alert('バックアップを読み込み、勤務表に反映しました。');
+ }catch(_){alert('バックアップファイルを読み込めませんでした。正しい勤務表バックアップを選択してください。');}
+ finally{backupFile.value='';}
+});
 document.getElementById('currentMonth').addEventListener('click',()=>{
  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'numeric'}).formatToParts(new Date());
  year.value=String(Number(parts.find(p=>p.type==='year').value));
