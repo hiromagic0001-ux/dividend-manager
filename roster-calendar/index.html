@@ -208,27 +208,52 @@ document.getElementById('currentMonth').addEventListener('click',()=>{
 });
 render();
 
-// 勤務セルをタップして個別変更。休みセルは変更対象外。
+// 勤務セルをタップして画面内メニューから個別変更。promptは使わずiPhoneのホーム画面版にも対応。
+const shiftDialog=document.createElement('div');
+shiftDialog.id='shiftEditDialog';
+shiftDialog.setAttribute('role','dialog');
+shiftDialog.setAttribute('aria-modal','true');
+shiftDialog.setAttribute('aria-label','勤務の変更');
+shiftDialog.style.cssText='display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.42);align-items:center;justify-content:center;padding:20px;';
+const shiftPanel=document.createElement('div');
+shiftPanel.style.cssText='width:min(100%,340px);background:#fff;border-radius:16px;padding:18px;box-shadow:0 8px 32px rgba(0,0,0,.25);';
+const shiftTitle=document.createElement('div');
+shiftTitle.textContent='勤務を選択';
+shiftTitle.style.cssText='font-size:18px;font-weight:800;margin-bottom:12px;color:#202832;';
+const shiftChoices=document.createElement('div');
+shiftChoices.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:9px;';
+const shiftCancel=document.createElement('button');
+shiftCancel.type='button';shiftCancel.textContent='キャンセル';
+shiftCancel.style.cssText='width:100%;margin-top:12px;padding:12px;border:1px solid #aab3bd;border-radius:9px;background:#f3f5f8;font-size:16px;font-weight:700;';
+shiftPanel.append(shiftTitle,shiftChoices,shiftCancel);shiftDialog.append(shiftPanel);document.body.append(shiftDialog);
+let editingCell=null;
+function closeShiftDialog(){shiftDialog.style.display='none';editingCell=null;}
+function saveCellShift(value){
+ if(!editingCell)return;
+ const key=editingCell.dataset.date+'-'+editingCell.dataset.team;
+ if(value===null)delete overrides[key];else overrides[key]=value;
+ try{localStorage.setItem('shiftCalendarOverrides',JSON.stringify(overrides));}
+ catch(_){alert('端末内に保存できませんでした。');closeShiftDialog();return;}
+ closeShiftDialog();render();
+}
+function addShiftChoice(label,value){
+ const b=document.createElement('button');b.type='button';b.textContent=label;
+ b.style.cssText='min-height:48px;padding:10px 6px;border:1px solid #aab3bd;border-radius:9px;background:#f7f9fb;color:#202832;font-size:17px;font-weight:800;';
+ b.addEventListener('click',()=>saveCellShift(value));shiftChoices.append(b);
+}
 document.getElementById('calendar').addEventListener('click',e=>{
  const td=e.target.closest('td.shift');
- if(!td || !td.dataset.baseShift)return;
+ if(!td || !td.dataset.baseShift || td.dataset.baseShift==='休')return;
+ editingCell=td;
  const base=td.dataset.baseShift;
- if(base==='休')return;
- let choices=base==='ア'?['ア','ア残','ア早','有給']:base==='ユ'?['ユ','ユ残','ユ早']:['ヤ','ヤ残','ヤ早'];
- const current=td.textContent;
- const menu=choices.map((v,i)=>(i+1)+'. '+v).join('\\n')+'\\n0. 元に戻す';
- const answer=window.prompt('変更する勤務を番号で選択してください。\\n現在：'+current+'\\n'+menu,'');
- if(answer===null || answer.trim()==='')return;
- let selected;
- if(answer.trim()==='0') selected=null;
- else {const n=Number(answer);if(!Number.isInteger(n)||n<1||n>choices.length){alert('番号が正しくありません。');return;}selected=choices[n-1];}
- const key=td.dataset.date+'-'+td.dataset.team;
- if(selected===null)delete overrides[key];else overrides[key]=selected;
- try{localStorage.setItem('shiftCalendarOverrides',JSON.stringify(overrides));}
- catch(_){alert('端末内に保存できませんでした。');return;}
- render();
+ const choices=base==='ア'?['ア','ア残','ア早','有給']:base==='ユ'?['ユ','ユ残','ユ早']:['ヤ','ヤ残','ヤ早'];
+ shiftChoices.replaceChildren();
+ choices.forEach(v=>addShiftChoice(v,v));
+ addShiftChoice('元に戻す',null);
+ shiftDialog.style.display='flex';
 });
-
+shiftCancel.addEventListener('click',closeShiftDialog);
+shiftDialog.addEventListener('click',e=>{if(e.target===shiftDialog)closeShiftDialog();});
 // iPhone Safari用：document captureで左右スワイプを確実に検出。
 let swipeX=0,swipeY=0,swipeActive=false;
 document.addEventListener('touchstart',e=>{
