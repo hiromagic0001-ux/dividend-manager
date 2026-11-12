@@ -259,10 +259,11 @@ shiftDialog.addEventListener('click',e=>{if(e.target===shiftDialog)closeShiftDia
 // iPhone Safari用：document captureで左右スワイプを確実に検出。
 let swipeX=0,swipeY=0,swipeActive=false;
 document.addEventListener('touchstart',e=>{
- if(e.touches.length!==1 || e.target.closest('select,button,input')){swipeActive=false;return;}
+ if(e.touches.length!==1 || e.target.closest('select,button,input,td.shift,#shiftEditDialog')){swipeActive=false;return;}
  swipeX=e.touches[0].clientX;swipeY=e.touches[0].clientY;swipeActive=true;
 },{capture:true,passive:true});
 document.addEventListener('touchend',e=>{
+ if(shiftDialog.style.display==='flex'){swipeActive=false;return;}
  if(!swipeActive || !e.changedTouches.length)return;
  const dx=e.changedTouches[0].clientX-swipeX;
  const dy=e.changedTouches[0].clientY-swipeY;
