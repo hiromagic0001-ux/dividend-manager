@@ -243,10 +243,10 @@ function addShiftChoice(label,value){
 }
 document.getElementById('calendar').addEventListener('click',e=>{
  const td=e.target.closest('td.shift');
- if(!td || !td.dataset.baseShift || td.dataset.baseShift==='休')return;
+ if(!td || !td.dataset.baseShift)return;
  editingCell=td;
  const base=td.dataset.baseShift;
- const choices=base==='ア'?['ア','ア残','ア早','有給']:base==='ユ'?['ユ','ユ残','ユ早']:['ヤ','ヤ残','ヤ早'];
+ const choices=base==='休'?['休','ア','ア残','ア早','ヤ','ヤ残','ヤ早','ユ','ユ残','ユ早','有給']:base==='ア'?['ア','ア残','ア早','有給']:base==='ユ'?['ユ','ユ残','ユ早']:['ヤ','ヤ残','ヤ早'];
  shiftChoices.replaceChildren();
  choices.forEach(v=>addShiftChoice(v,v));
  addShiftChoice('元に戻す',null);
