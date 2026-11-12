@@ -155,7 +155,7 @@ function render(animate=false,direction=0){
     const dateKey=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const overrideKey=dateKey+'-'+(i+1);
     let shift=overrides[overrideKey] || baseShift;
-    td.dataset.date=dateKey;td.dataset.team=String(i+1);td.dataset.baseShift=baseShift;
+    td.dataset.date=dateKey;td.dataset.team=String(i+1);td.dataset.baseShift=baseShift;td.dataset.previousShift=pat[(((diff-1)%16)+16)%16];
     td.textContent=shift;td.className='shift shift-'+shift;tr.append(td);
    }
    tbody.append(tr);
@@ -244,9 +244,10 @@ function addShiftChoice(label,value){
 document.getElementById('calendar').addEventListener('click',e=>{
  const td=e.target.closest('td.shift');
  if(!td || !td.dataset.baseShift)return;
- editingCell=td;
  const base=td.dataset.baseShift;
- const choices=base==='休'?['休','ア','ア残','ア早','ヤ','ヤ残','ヤ早','ユ','ユ残','ユ早','有給']:base==='ア'?['ア','ア残','ア早','有給']:base==='ユ'?['ユ','ユ残','ユ早']:['ヤ','ヤ残','ヤ早'];
+ if(base==='休' && td.dataset.previousShift!=='ヤ')return;
+ editingCell=td;
+ const choices=base==='休'?['残']:base==='ア'?['ア','ア残','ア早','有給']:base==='ユ'?['ユ','ユ残','ユ早']:['ヤ','ヤ残','ヤ早'];
  shiftChoices.replaceChildren();
  choices.forEach(v=>addShiftChoice(v,v));
  addShiftChoice('元に戻す',null);
