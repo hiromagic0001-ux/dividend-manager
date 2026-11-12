@@ -153,7 +153,7 @@ function openEditor(cell){
  const k=cell.dataset.date,r=Number(cell.dataset.row),base=cell.dataset.base,v=currentShift(r,k,base);editing={k,r,base};
  $('editTitle').textContent=k.replaceAll('-','/')+'　'+(r+1)+'組';
  const box=$('choices');box.replaceChildren();
- const prevDate=new Date(k+'T00:00:00');prevDate.setDate(prevDate.getDate()-1);const prevBase=defaultShift(r,prevDate);options(base,prevBase).forEach(choice=>{const b=document.createElement('button');b.type='button';b.textContent=choice;if(choice===v)b.style.border='2px solid #176b50';b.addEventListener('click',()=>{const id=k+'|'+r;if(choice===base)delete overrides[id];else overrides[id]=choice;persist();closeEditor();render()});box.append(b)});
+ const prevCell=cell.previousElementSibling;let prevBase=prevCell&&prevCell.dataset.base?prevCell.dataset.base:'';if(!prevBase){const prevDate=new Date(k+'T00:00:00');prevDate.setDate(prevDate.getDate()-1);prevBase=defaultShift(r,prevDate)}options(base,prevBase).forEach(choice=>{const b=document.createElement('button');b.type='button';b.textContent=choice;if(choice===v)b.style.border='2px solid #176b50';b.addEventListener('click',()=>{const id=k+'|'+r;if(choice===base)delete overrides[id];else overrides[id]=choice;persist();closeEditor();render()});box.append(b)});
  $('editShade').classList.add('open')
 }
 function closeEditor(){editing=null;$('editShade').classList.remove('open')}
