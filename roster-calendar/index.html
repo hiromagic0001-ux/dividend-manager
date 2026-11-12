@@ -215,7 +215,12 @@ document.addEventListener('touchend',e=>{
 },{capture:true,passive:true});
 document.addEventListener('touchcancel',()=>{swipeActive=false;},{capture:true,passive:true});
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  navigator.serviceWorker.addEventListener("controllerchange", () => window.location.reload(), { once: true });
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" })
+      .then(registration => registration.update())
+      .catch(() => {});
+  });
 }
 </script>
 </body></html>
