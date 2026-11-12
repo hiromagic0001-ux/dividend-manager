@@ -79,7 +79,7 @@ tbody th.team{background:#f1f3f6}
 </div>
 <table id="calendar" aria-label="個人用組別勤務表"></table>
 </div>
-<div class="legend"><span>🟦 ア系</span><span>🟧 ヤ系</span><span>🟩 ユ系</span><span>⬜ 休</span><span>🟪 有給</span></div>
+<div class="legend"><span>🟦 ア系</span><span>🟧 ヤ系</span><span>🟩 ユ系</span><span>⬜ 休</span><span>🟪 有休</span></div>
 <p class="help">日付の勤務記号をタップすると変更できます。変更内容はこのスマホのブラウザ内に保存されます。初期表示は元の勤務表と同じ1組〜4組のパターンです。</p>
 <div class="backup">
 <button type="button" id="export">バックアップを書き出す</button>
@@ -119,8 +119,8 @@ function persist(){try{localStorage.setItem(KEY,JSON.stringify(overrides));$('st
 function key(y,m,d){return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
 function defaultShift(row,date){const diff=Math.round((Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())-Date.UTC(2026,10,1))/86400000);return patterns[row][((diff%16)+16)%16]}
 function currentShift(row,k,base){return Object.prototype.hasOwnProperty.call(overrides,k+'|'+row)?overrides[k+'|'+row]:base}
-function options(base){if(base==='ア')return ['ア','ア残','ア早','有給'];if(base==='ユ')return ['ユ','ユ残','ユ早'];if(base==='ヤ')return ['ヤ','ヤ残','ヤ早'];return ['休']}
-function cls(v){if(v==='有給')return 'shift-有給';if(v.startsWith('ア'))return 'shift-ア';if(v.startsWith('ヤ'))return 'shift-ヤ';if(v.startsWith('ユ'))return 'shift-ユ';return 'shift-休'}
+function options(base){if(base==='ア')return ['ア残','ア早','有休'];if(base==='ユ')return ['ユ残','ユ早','有休'];if(base==='ヤ')return ['ヤ残','ヤ早','有休'];return ['休']}
+function cls(v){if(v==='有休'||v==='有給')return 'shift-有給';if(v.startsWith('ア'))return 'shift-ア';if(v.startsWith('ヤ'))return 'shift-ヤ';if(v.startsWith('ユ'))return 'shift-ユ';return 'shift-休'}
 function jp(d){return new Intl.DateTimeFormat('ja-JP',{weekday:'short'}).format(d)}
 function nthMonday(y,m,n){const d=new Date(y,m-1,1);return 1+((8-d.getDay())%7)+(n-1)*7}
 function equinox(y,spring){return Math.floor(spring?20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4):23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4))}
