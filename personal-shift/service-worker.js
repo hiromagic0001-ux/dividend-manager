@@ -1,4 +1,4 @@
-const CACHE_NAME = 'personal-shift-v2';
+const CACHE_NAME = 'personal-shift-v3';
 const ASSETS = [
   './',
   './index.html',
