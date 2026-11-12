@@ -1,4 +1,4 @@
-const CACHE_NAME = "shift-calendar-pwa-v9";
+const CACHE_NAME = "shift-calendar-pwa-v10";
 const APP_FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-512.png"];
 
 self.addEventListener("install", event => {
