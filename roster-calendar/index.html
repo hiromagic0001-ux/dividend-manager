@@ -39,6 +39,7 @@ th.team{position:sticky;left:0;z-index:2;background:#e9edf2;min-width:65px}
 tbody th.team{background:#f1f3f6}
 .sat{color:var(--sat)!important}.sun,.holiday{color:var(--sun)!important}
 .shift{font-size:18px;font-weight:800}.shift-ア{background:#dceeff}.shift-ヤ{background:#ffe8cc}.shift-ユ{background:#e2f3df}.shift-休{background:#eceff3;color:#6b7280}
+.shift-edited{color:#e83e8c!important;border:2px solid #ff69b4!important;}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0;font-size:14px}
 .note{font-size:12px;color:#626d79;line-height:1.6;margin-top:14px}
 .warning{background:#fff7e6;border:1px solid #f0d28b;padding:10px 12px;border-radius:9px;font-size:13px;line-height:1.55;margin-top:12px}
@@ -156,7 +157,7 @@ function render(animate=false,direction=0){
     const overrideKey=dateKey+'-'+(i+1);
     let shift=overrides[overrideKey] || baseShift;
     td.dataset.date=dateKey;td.dataset.team=String(i+1);td.dataset.baseShift=baseShift;td.dataset.previousShift=pat[(((diff-1)%16)+16)%16];
-    td.textContent=shift;td.className='shift shift-'+shift;tr.append(td);
+    td.textContent=shift;td.className='shift shift-'+shift+(Object.prototype.hasOwnProperty.call(overrides,overrideKey)?' shift-edited':'');tr.append(td);
    }
    tbody.append(tr);
   });
