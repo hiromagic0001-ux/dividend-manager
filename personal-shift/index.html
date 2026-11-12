@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#176b50">
+<title>わたしの勤務表</title>
+<style>
+:root{color-scheme:light;--green:#176b50;--pale:#e9f4ef;--line:#dce5e0;--ink:#20332b;--muted:#68776f}
+*{box-sizing:border-box}body{margin:0;background:#f4f7f5;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:720px;margin:auto;padding:18px 14px 40px}
+header{background:var(--green);color:white;padding:20px 18px;border-radius:18px;margin-bottom:16px}
+h1{font-size:23px;margin:0 0 5px}header p{margin:0;font-size:13px;opacity:.9}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;margin:12px 0;box-shadow:0 2px 8px #173d2810}
+.monthbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.monthbar strong{font-size:20px}
+button,select,input{font:inherit}
+button{border:0;border-radius:10px;padding:10px 13px;background:var(--green);color:white;font-weight:600}
+button.secondary{background:var(--pale);color:var(--green)}
+button.danger{background:#fff0ef;color:#a3312a}
+.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.weekday{text-align:center;font-size:12px;color:var(--muted);padding:5px 0}
+.day{min-height:66px;padding:6px 3px;background:#fbfcfb;border:1px solid var(--line);border-radius:9px;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:5px}
+.day:disabled{opacity:.28}.day.today{outline:2px solid #8ab9a5}.day.selected{background:var(--pale);border:2px solid var(--green);padding:5px 2px}
+.daynum{font-size:14px}.tag{font-size:10px;line-height:1.25;font-weight:700;overflow-wrap:anywhere}
+.tag.work{color:#176b50}.tag.off{color:#586a9a}.tag.paid{color:#a06a18}.tag.other{color:#7c5795}
+.formrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,input[type=date],input[type=text]{min-height:42px;border:1px solid #cbd8d0;border-radius:9px;padding:8px 10px;background:white;color:var(--ink)}
+select{flex:1;min-width:130px}.note{width:100%;margin-top:9px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.small{font-size:12px;color:var(--muted);line-height:1.5}
+.selected-date{font-weight:700;margin-bottom:10px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:12px}
+.legend span{display:flex;align-items:center;gap:4px}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+@media(max-width:380px){.day{min-height:58px}.tag{font-size:9px}.daynum{font-size:13px}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>わたしの勤務表</h1><p>自分のスマホで入力・変更できる勤務カレンダー</p></header>
+<section class="panel">
+<div class="monthbar"><button class="secondary" id="prev" aria-label="前の月">‹</button><strong id="monthTitle"></strong><button class="secondary" id="next" aria-label="次の月">›</button></div>
+<div class="calendar" id="calendar"></div>
+<div class="legend"><span>🟢 出勤</span><span>🔵 休み</span><span>🟠 有給</span><span>🟣 その他</span></div>
+</section>
+<section class="panel">
+<div class="selected-date" id="selectedDate"></div>
+<div class="formrow">
+<select id="kind" aria-label="勤務の種類">
+<option value="">勤務を選択</option><option value="出勤">出勤</option><option value="休み">休み</option><option value="有給">有給</option><option value="その他">その他</option>
+</select>
+<button id="save">保存する</button>
+</div>
+<input class="note" id="note" type="text" maxlength="60" placeholder="メモ（任意）">
+<div class="actions"><button class="secondary" id="clear">入力をクリア</button><button class="danger" id="remove">この日の勤務を削除</button></div>
+<p class="small">日付を選び、勤務の種類を選択して「保存する」を押してください。入力内容はこのスマホのブラウザに自動保存されます。</p>
+</section>
+<section class="panel">
+<strong>データのバックアップ</strong>
+<p class="small">機種変更やブラウザのデータ削除に備えて、定期的にバックアップを保存してください。</p>
+<div class="actions"><button class="secondary" id="export">バックアップを書き出す</button><button class="secondary" id="importBtn">バックアップを読み込む</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
+<p class="small" id="backupStatus" aria-live="polite"></p>
+</section>
+<p class="small">この勤務表のデータは、入力したスマホ・ブラウザ内だけに保存されます。他の人や別の端末とは共有されません。</p>
+</main>
+<script>
+(()=>{
+const KEY='personal-shift-calendar-v1';
+const names=['日','月','火','水','木','金','土'];
+const today=new Date();let view=new Date(today.getFullYear(),today.getMonth(),1);
+let selected=iso(today);let entries=load();
+const $=id=>document.getElementById(id);
+function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch(e){return {}}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(entries));$('backupStatus').textContent='保存しました。'}catch(e){$('backupStatus').textContent='保存できませんでした。ブラウザの空き容量や設定を確認してください。'}}
+function render(){
+$('monthTitle').textContent=view.getFullYear()+'年 '+(view.getMonth()+1)+'月';
+const cal=$('calendar');cal.innerHTML='';
+names.forEach(n=>{const el=document.createElement('div');el.className='weekday';el.textContent=n;cal.append(el)});
+const first=new Date(view.getFullYear(),view.getMonth(),1).getDay();
+const count=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();
+for(let i=0;i<first;i++){const blank=document.createElement('div');cal.append(blank)}
+for(let d=1;d<=count;d++){
+const date=iso(new Date(view.getFullYear(),view.getMonth(),d));const entry=entries[date];
+const b=document.createElement('button');b.type='button';b.className='day'+(date===selected?' selected':'')+(date===iso(today)?' today':'');b.setAttribute('aria-label',date+(entry?' '+entry.kind:''));b.innerHTML='<span class="daynum">'+d+'</span>';
+if(entry){const tag=document.createElement('span');tag.className='tag '+classFor(entry.kind);tag.textContent=entry.kind;b.append(tag)}
+b.addEventListener('click',()=>{selected=date;fill();render()});cal.append(b)
+}
+$('selectedDate').textContent=selected.replaceAll('-','年').replace(/年(\d{2})年/,'年$1月')+'日 の勤務';
+const current=entries[selected];$('kind').value=current?.kind||'';$('note').value=current?.note||'';
+}
+function classFor(k){return k==='出勤'?'work':k==='休み'?'off':k==='有給'?'paid':'other'}
+function fill(){const d=new Date(selected+'T00:00:00');view=new Date(d.getFullYear(),d.getMonth(),1)}
+$('prev').addEventListener('click',()=>{view.setMonth(view.getMonth()-1);render()});
+$('next').addEventListener('click',()=>{view.setMonth(view.getMonth()+1);render()});
+$('save').addEventListener('click',()=>{const kind=$('kind').value;if(!kind){alert('勤務の種類を選択してください。');return}entries[selected]={kind,note:$('note').value.trim()};persist();render()});
+$('clear').addEventListener('click',()=>{$('kind').value='';$('note').value=''});
+$('remove').addEventListener('click',()=>{if(!entries[selected]){alert('この日に登録された勤務はありません。');return}if(confirm('この日の勤務を削除しますか？')){delete entries[selected];persist();render()}});
+$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({app:'personal-shift-calendar',version:1,entries},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='勤務表バックアップ-'+iso(today)+'.json';a.click();URL.revokeObjectURL(url);$('backupStatus').textContent='バックアップファイルを書き出しました。'});
+$('importBtn').addEventListener('click',()=>$('importFile').click());
+$('importFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{const data=JSON.parse(await file.text());const incoming=data.entries;if(!incoming||typeof incoming!=='object'||Array.isArray(incoming))throw new Error();if(!confirm('現在の勤務データを、バックアップの内容に置き換えますか？'))return;entries=incoming;persist();render();$('backupStatus').textContent='バックアップを読み込みました。'}catch(err){alert('バックアップファイルを読み込めませんでした。')}finally{e.target.value=''}});
+render();
+})();
+</script>
+</body>
+</html>
