@@ -101,6 +101,12 @@ try {
  const storedPatterns = JSON.parse(localStorage.getItem('shiftCalendarPatterns') || 'null');
  if (validPatterns(storedPatterns)) patterns = storedPatterns;
 } catch (_) {}
+// 個別セルの変更内容を端末内に保存
+let overrides = {};
+try {
+ const savedOverrides = JSON.parse(localStorage.getItem('shiftCalendarOverrides') || '{}');
+ if (savedOverrides && typeof savedOverrides === 'object' && !Array.isArray(savedOverrides)) overrides = savedOverrides;
+} catch (_) {}
 const jp=(n)=>new Intl.DateTimeFormat('ja-JP',{weekday:'short'}).format(n);
 const nthMonday=(y,m,n)=>{let d=new Date(y,m-1,1);return 1+((8-d.getDay())%7)+(n-1)*7};
 function equinox(y, spring){return Math.floor(spring ? 20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4) : 23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4));}
@@ -145,7 +151,12 @@ function render(animate=false,direction=0){
    for(let d=start;d<=end;d++){
     let td=document.createElement('td');
     let diff=Math.round((Date.UTC(y,m-1,d)-Date.UTC(2026,10,1))/86400000);
-    let shift=pat[((diff%16)+16)%16];td.textContent=shift;td.className='shift shift-'+shift;tr.append(td);
+    const baseShift=pat[((diff%16)+16)%16];
+    const dateKey=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const overrideKey=dateKey+'-'+(i+1);
+    let shift=overrides[overrideKey] || baseShift;
+    td.dataset.date=dateKey;td.dataset.team=String(i+1);td.dataset.baseShift=baseShift;
+    td.textContent=shift;td.className='shift shift-'+shift;tr.append(td);
    }
    tbody.append(tr);
   });
@@ -163,7 +174,7 @@ function render(animate=false,direction=0){
 year.addEventListener('change',()=>render(true));month.addEventListener('change',()=>render(true));
 const backupFile=document.getElementById('backupFile');
 document.getElementById('saveBackup').addEventListener('click',()=>{
- const backup={format:'shift-calendar-backup',version:1,savedAt:new Date().toISOString(),year:Number(year.value),month:Number(month.value),patterns};
+ const backup={format:'shift-calendar-backup',version:1,savedAt:new Date().toISOString(),year:Number(year.value),month:Number(month.value),patterns,overrides};
  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
  const url=URL.createObjectURL(blob);
  const a=document.createElement('a');
@@ -179,7 +190,9 @@ backupFile.addEventListener('change',async()=>{
   const data=JSON.parse(await file.text());
   if(data.format!=='shift-calendar-backup'||data.version!==1||!validPatterns(data.patterns))throw new Error('invalid');
   patterns=data.patterns;
+  overrides=(data.overrides && typeof data.overrides==='object' && !Array.isArray(data.overrides))?data.overrides:{};
   localStorage.setItem('shiftCalendarPatterns',JSON.stringify(patterns));
+  localStorage.setItem('shiftCalendarOverrides',JSON.stringify(overrides));
   if(Number.isInteger(data.year)&&data.year>=2026&&data.year<=2099)year.value=String(data.year);
   if(Number.isInteger(data.month)&&data.month>=1&&data.month<=12)month.value=String(data.month);
   render();
@@ -194,6 +207,27 @@ document.getElementById('currentMonth').addEventListener('click',()=>{
  render(true);
 });
 render();
+
+// 勤務セルをタップして個別変更。休みセルは変更対象外。
+document.getElementById('calendar').addEventListener('click',e=>{
+ const td=e.target.closest('td.shift');
+ if(!td || !td.dataset.baseShift)return;
+ const base=td.dataset.baseShift;
+ if(base==='休')return;
+ let choices=base==='ア'?['ア','ア残','ア早','有給']:base==='ユ'?['ユ','ユ残','ユ早']:['ヤ','ヤ残','ヤ早'];
+ const current=td.textContent;
+ const menu=choices.map((v,i)=>(i+1)+'. '+v).join('\\n')+'\\n0. 元に戻す';
+ const answer=window.prompt('変更する勤務を番号で選択してください。\\n現在：'+current+'\\n'+menu,'');
+ if(answer===null || answer.trim()==='')return;
+ let selected;
+ if(answer.trim()==='0') selected=null;
+ else {const n=Number(answer);if(!Number.isInteger(n)||n<1||n>choices.length){alert('番号が正しくありません。');return;}selected=choices[n-1];}
+ const key=td.dataset.date+'-'+td.dataset.team;
+ if(selected===null)delete overrides[key];else overrides[key]=selected;
+ try{localStorage.setItem('shiftCalendarOverrides',JSON.stringify(overrides));}
+ catch(_){alert('端末内に保存できませんでした。');return;}
+ render();
+});
 
 // iPhone Safari用：document captureで左右スワイプを確実に検出。
 let swipeX=0,swipeY=0,swipeActive=false;
